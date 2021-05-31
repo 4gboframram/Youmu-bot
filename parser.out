@@ -1,0 +1,261 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> command
+Rule 1     command -> statement
+Rule 2     statement -> expr
+Rule 3     statement -> expr statement
+Rule 4     expr -> MEMBER TIME
+Rule 5     expr -> MEMBER
+Rule 6     expr -> ROLE PERMISSION
+Rule 7     expr -> CHANNEL INT
+Rule 8     expr -> EXTEND MEMBER
+Rule 9     expr -> EXTEND ROLE
+Rule 10    expr -> EXTEND CHANNEL
+Rule 11    expr -> REDUCT MEMBER
+Rule 12    expr -> REDUCT ROLE COLOR
+
+Terminals, with rules where they appear
+
+CHANNEL              : 7 10
+COLOR                : 12
+EXTEND               : 8 9 10
+INT                  : 7
+MEMBER               : 4 5 8 11
+PERMISSION           : 6
+REDUCT               : 11 12
+ROLE                 : 6 9 12
+TIME                 : 4
+error                : 
+
+Nonterminals, with rules where they appear
+
+command              : 0
+expr                 : 2 3
+statement            : 1 3
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . command
+    (1) command -> . statement
+    (2) statement -> . expr
+    (3) statement -> . expr statement
+    (4) expr -> . MEMBER TIME
+    (5) expr -> . MEMBER
+    (6) expr -> . ROLE PERMISSION
+    (7) expr -> . CHANNEL INT
+    (8) expr -> . EXTEND MEMBER
+    (9) expr -> . EXTEND ROLE
+    (10) expr -> . EXTEND CHANNEL
+    (11) expr -> . REDUCT MEMBER
+    (12) expr -> . REDUCT ROLE COLOR
+
+    MEMBER          shift and go to state 4
+    ROLE            shift and go to state 5
+    CHANNEL         shift and go to state 6
+    EXTEND          shift and go to state 7
+    REDUCT          shift and go to state 8
+
+    command                        shift and go to state 1
+    statement                      shift and go to state 2
+    expr                           shift and go to state 3
+
+state 1
+
+    (0) S' -> command .
+
+
+
+state 2
+
+    (1) command -> statement .
+
+    $end            reduce using rule 1 (command -> statement .)
+
+
+state 3
+
+    (2) statement -> expr .
+    (3) statement -> expr . statement
+    (2) statement -> . expr
+    (3) statement -> . expr statement
+    (4) expr -> . MEMBER TIME
+    (5) expr -> . MEMBER
+    (6) expr -> . ROLE PERMISSION
+    (7) expr -> . CHANNEL INT
+    (8) expr -> . EXTEND MEMBER
+    (9) expr -> . EXTEND ROLE
+    (10) expr -> . EXTEND CHANNEL
+    (11) expr -> . REDUCT MEMBER
+    (12) expr -> . REDUCT ROLE COLOR
+
+    $end            reduce using rule 2 (statement -> expr .)
+    MEMBER          shift and go to state 4
+    ROLE            shift and go to state 5
+    CHANNEL         shift and go to state 6
+    EXTEND          shift and go to state 7
+    REDUCT          shift and go to state 8
+
+    expr                           shift and go to state 3
+    statement                      shift and go to state 9
+
+state 4
+
+    (4) expr -> MEMBER . TIME
+    (5) expr -> MEMBER .
+
+    TIME            shift and go to state 10
+    MEMBER          reduce using rule 5 (expr -> MEMBER .)
+    ROLE            reduce using rule 5 (expr -> MEMBER .)
+    CHANNEL         reduce using rule 5 (expr -> MEMBER .)
+    EXTEND          reduce using rule 5 (expr -> MEMBER .)
+    REDUCT          reduce using rule 5 (expr -> MEMBER .)
+    $end            reduce using rule 5 (expr -> MEMBER .)
+
+
+state 5
+
+    (6) expr -> ROLE . PERMISSION
+
+    PERMISSION      shift and go to state 11
+
+
+state 6
+
+    (7) expr -> CHANNEL . INT
+
+    INT             shift and go to state 12
+
+
+state 7
+
+    (8) expr -> EXTEND . MEMBER
+    (9) expr -> EXTEND . ROLE
+    (10) expr -> EXTEND . CHANNEL
+
+    MEMBER          shift and go to state 13
+    ROLE            shift and go to state 14
+    CHANNEL         shift and go to state 15
+
+
+state 8
+
+    (11) expr -> REDUCT . MEMBER
+    (12) expr -> REDUCT . ROLE COLOR
+
+    MEMBER          shift and go to state 16
+    ROLE            shift and go to state 17
+
+
+state 9
+
+    (3) statement -> expr statement .
+
+    $end            reduce using rule 3 (statement -> expr statement .)
+
+
+state 10
+
+    (4) expr -> MEMBER TIME .
+
+    MEMBER          reduce using rule 4 (expr -> MEMBER TIME .)
+    ROLE            reduce using rule 4 (expr -> MEMBER TIME .)
+    CHANNEL         reduce using rule 4 (expr -> MEMBER TIME .)
+    EXTEND          reduce using rule 4 (expr -> MEMBER TIME .)
+    REDUCT          reduce using rule 4 (expr -> MEMBER TIME .)
+    $end            reduce using rule 4 (expr -> MEMBER TIME .)
+
+
+state 11
+
+    (6) expr -> ROLE PERMISSION .
+
+    MEMBER          reduce using rule 6 (expr -> ROLE PERMISSION .)
+    ROLE            reduce using rule 6 (expr -> ROLE PERMISSION .)
+    CHANNEL         reduce using rule 6 (expr -> ROLE PERMISSION .)
+    EXTEND          reduce using rule 6 (expr -> ROLE PERMISSION .)
+    REDUCT          reduce using rule 6 (expr -> ROLE PERMISSION .)
+    $end            reduce using rule 6 (expr -> ROLE PERMISSION .)
+
+
+state 12
+
+    (7) expr -> CHANNEL INT .
+
+    MEMBER          reduce using rule 7 (expr -> CHANNEL INT .)
+    ROLE            reduce using rule 7 (expr -> CHANNEL INT .)
+    CHANNEL         reduce using rule 7 (expr -> CHANNEL INT .)
+    EXTEND          reduce using rule 7 (expr -> CHANNEL INT .)
+    REDUCT          reduce using rule 7 (expr -> CHANNEL INT .)
+    $end            reduce using rule 7 (expr -> CHANNEL INT .)
+
+
+state 13
+
+    (8) expr -> EXTEND MEMBER .
+
+    MEMBER          reduce using rule 8 (expr -> EXTEND MEMBER .)
+    ROLE            reduce using rule 8 (expr -> EXTEND MEMBER .)
+    CHANNEL         reduce using rule 8 (expr -> EXTEND MEMBER .)
+    EXTEND          reduce using rule 8 (expr -> EXTEND MEMBER .)
+    REDUCT          reduce using rule 8 (expr -> EXTEND MEMBER .)
+    $end            reduce using rule 8 (expr -> EXTEND MEMBER .)
+
+
+state 14
+
+    (9) expr -> EXTEND ROLE .
+
+    MEMBER          reduce using rule 9 (expr -> EXTEND ROLE .)
+    ROLE            reduce using rule 9 (expr -> EXTEND ROLE .)
+    CHANNEL         reduce using rule 9 (expr -> EXTEND ROLE .)
+    EXTEND          reduce using rule 9 (expr -> EXTEND ROLE .)
+    REDUCT          reduce using rule 9 (expr -> EXTEND ROLE .)
+    $end            reduce using rule 9 (expr -> EXTEND ROLE .)
+
+
+state 15
+
+    (10) expr -> EXTEND CHANNEL .
+
+    MEMBER          reduce using rule 10 (expr -> EXTEND CHANNEL .)
+    ROLE            reduce using rule 10 (expr -> EXTEND CHANNEL .)
+    CHANNEL         reduce using rule 10 (expr -> EXTEND CHANNEL .)
+    EXTEND          reduce using rule 10 (expr -> EXTEND CHANNEL .)
+    REDUCT          reduce using rule 10 (expr -> EXTEND CHANNEL .)
+    $end            reduce using rule 10 (expr -> EXTEND CHANNEL .)
+
+
+state 16
+
+    (11) expr -> REDUCT MEMBER .
+
+    MEMBER          reduce using rule 11 (expr -> REDUCT MEMBER .)
+    ROLE            reduce using rule 11 (expr -> REDUCT MEMBER .)
+    CHANNEL         reduce using rule 11 (expr -> REDUCT MEMBER .)
+    EXTEND          reduce using rule 11 (expr -> REDUCT MEMBER .)
+    REDUCT          reduce using rule 11 (expr -> REDUCT MEMBER .)
+    $end            reduce using rule 11 (expr -> REDUCT MEMBER .)
+
+
+state 17
+
+    (12) expr -> REDUCT ROLE . COLOR
+
+    COLOR           shift and go to state 18
+
+
+state 18
+
+    (12) expr -> REDUCT ROLE COLOR .
+
+    MEMBER          reduce using rule 12 (expr -> REDUCT ROLE COLOR .)
+    ROLE            reduce using rule 12 (expr -> REDUCT ROLE COLOR .)
+    CHANNEL         reduce using rule 12 (expr -> REDUCT ROLE COLOR .)
+    EXTEND          reduce using rule 12 (expr -> REDUCT ROLE COLOR .)
+    REDUCT          reduce using rule 12 (expr -> REDUCT ROLE COLOR .)
+    $end            reduce using rule 12 (expr -> REDUCT ROLE COLOR .)
+
