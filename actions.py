@@ -274,7 +274,20 @@ class Clear:
 			await asyncio.sleep(10)
 			await bot_message.delete()
 		except discord.errors.Forbidden:
-			await ctx.send("I do not have permissions to delete messages. Make sure that I have permissions to manage messages.")
+			await ctx.send("I do not have permissions to delete messages. Make sure that I have the permission to manage messages.")
+	async def run_slash(self, ctx):
+		channel=ctx.guild.get_channel(self.channel_id)
+		try:
+			await channel.purge(limit=self.count)
+			embed=discord.Embed(title="Cut!", description=f'Cut {self.count} messages from {channel.mention}', color=0xfd6d98)
+			embed.set_author(name="Youmu Bot", icon_url='https://cdn.discordapp.com/avatars/847655832169480222/16c78890f9383ec318b4560675410120.webp?size=2048')
+			
+			
+			bot_message=await ctx.send(embed=embed)
+			await asyncio.sleep(10)
+			await bot_message.delete()
+		except discord.errors.Forbidden:
+			await ctx.send("I do not have permissions to delete messages. Make sure that I have the permission to manage messages.")
 
 ###########
 #Rate
