@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
-from discord.ext.commands import has_permissions,MissingPermissions
-
+from constants import YoumuEmbed
 async def handle_error(ctx, error):
 		# if command has local error handler, return
 		if hasattr(ctx.command, 'on_error'):
@@ -11,8 +10,7 @@ async def handle_error(ctx, error):
 		error = getattr(error, 'original', error)
 
 		if isinstance(error, commands.CommandNotFound):
-			embed = discord.Embed(title="You messed up",description="That command does not exist, you baka.\n ", colour=0xff0000)
-			embed.set_author(name="Youmu Bot", icon_url='https://cdn.discordapp.com/avatars/847655832169480222/16c78890f9383ec318b4560675410120.webp?size=2048')
+			embed = YoumuEmbed(title="You messed up",description="That command does not exist, you baka.\n ", colour=0xff0000)
 			embed.add_field(name='Technical details for the nobody that cares', value='Error: `commands.CommandNotFound`')
 			await ctx.send(embed=embed)
 			return
@@ -24,8 +22,7 @@ async def handle_error(ctx, error):
 			else:
 				fmt = ' and '.join(missing)
 			_message = 'I need the **{}** permission(s) to run this command.'.format(fmt)
-			embed = discord.Embed(title="You or the moderators messed up",description=_message, colour=0xff0000)
-			embed.set_author(name="Youmu Bot", icon_url='https://cdn.discordapp.com/avatars/847655832169480222/16c78890f9383ec318b4560675410120.webp?size=2048')
+			embed = YoumuEmbed(title="You or the moderators messed up",description=_message, colour=0xff0000)
 			embed.add_field(name='Technical details for the nobody that cares:', value='Error: `commands.BotMissingPermissions`')
 			await ctx.send(embed=embed)
 			return
@@ -41,8 +38,7 @@ async def handle_error(ctx, error):
 			else:
 				fmt = ' and '.join(missing)
 			_message = 'You need the **{}** permission(s) to use this command, you baka.'.format(fmt)
-			embed = discord.Embed(title="You or the moderators messed up",description=_message, colour=0xff0000)
-			embed.set_author(name="Youmu Bot", icon_url='https://cdn.discordapp.com/avatars/847655832169480222/16c78890f9383ec318b4560675410120.webp?size=2048')
+			embed = YoumuEmbed(title="You or the moderators messed up",description=_message, colour=0xff0000)
 			embed.add_field(name='Technical details for the nobody that cares:', value='Error: `commands.MissingPermissions`')
 			await ctx.send(embed=embed)
 			return
@@ -55,15 +51,13 @@ async def handle_error(ctx, error):
 			return
 
 		if isinstance(error, commands.CheckFailure):
-			embed = discord.Embed(title="You or the moderators messed up",description="You do not have permission to use this command.", colour=0xff0000)
-			embed.set_author(name="Youmu Bot", icon_url='https://cdn.discordapp.com/avatars/847655832169480222/16c78890f9383ec318b4560675410120.webp?size=2048')
+			embed = YoumuEmbed(title="You or the moderators messed up",description="You do not have permission to use this command.", colour=0xff0000)
 			embed.add_field(name='Technical details for the nobody that cares:', value='Error: `commands.CheckFailure`')
 			await ctx.send(embed=embed)
 			return 
 		
 		if isinstance(error, commands.MissingRequiredArgument):
-			embed = discord.Embed(title="You messed up",description=f"Missing `{error.param}` parameter in command.", colour=0xff0000)
-			embed.set_author(name="Youmu Bot", icon_url='https://cdn.discordapp.com/avatars/847655832169480222/16c78890f9383ec318b4560675410120.webp?size=2048')
+			embed = YoumuEmbed(title="You messed up",description=f"Missing `{error.param}` parameter in command.", colour=0xff0000)
 			embed.add_field(name='Technical details for the nobody that cares:', value='Error: `commands.MissingRequiredArgument`')
 			await ctx.send(embed=embed)
 			return 

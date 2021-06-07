@@ -1,14 +1,17 @@
 # About
-This is Youmu bot, a wip Discord bot where all of its moderation commands are built into a single command: `;cut` (or `/cut` if you're into that sort of thing)
+This is Youmu bot, a wip Discord bot with many functionalities.
+
+This started as just a moderation bot where all of its moderation commands are built into a single command: `;cut` (or `/cut` if you're into that sort of thing), but has turned into a lot more. 
 
 ## Inspiration
 One day, my friend who roleplays as Youmu joined my Discord server. I was thinking about making a Discord bot for them and they agreed that I should make one. Then I brought up a stupid idea: What if I made a Discord bot where all of the commands are in a single command? I thought about it overnight and concluded it was a stupid, yet fun idea. It would allow me to get familiar with creating lexers and parsers.
 
 
 # Commands:
-**Now slash commands are implemented**
+**Now slash commands are implemented for some commands**
+**New: Now mentioning the bot is now a valid prefix**
 
-The main command of this bot is `;cut` This command has all of the following functionalities built in:  ban, mute, tempmute, change role perms, change role color, delete role, purge a channel, lock a channel, and finally slice people that you don't like in half (or you can kill yourself too if you're a typical suicidal weeb like the target audience of this bot)
+The main command of this bot is `;cut` It is basically a Swiss army knife of moderation. This command has all of the following functionalities built in:  ban, mute, tempmute, change role perms, change role color, delete role, purge a channel, lock a channel, and finally slice people that you don't like in half (or you can kill yourself too if you're a typical suicidal weeb like the target audience of this bot)
 
 ## ;cut
 ### How the `;cut` command works (and rational behind it)
@@ -62,18 +65,55 @@ List of perms that are currently supported:
 
 `;cut - [role]`: Change a role's color to a value in hexadecimal. A preview of the color is also sent to the channel for future reference
 
+### Bot Channels
+
+For this bot, as the name implies, a bot channel is a channel where users can interact with the bot. **By default all channels in your server are bot channels.** 
+
+When a channel is removed from the list of bot channels, all of the commands except `;cut`, `;help`, and the commands below that manage bot channels are disabled and the bot sends an embed to let the invokee of the command know that they cannot use the command there.
+
+To manage bot channels, you need `administrator` permissions
+
+`;addbotchannel` : adds a channel to the list of bot channels
+
+`;removebotchannel` : removes a channel from the list of bot channels
+
+`;allbotchannel` : makes every channel in the server a bot channel
+
+`;removeallbotchannels` : removes every channel from the server from the list of bot channels
+
+
 ### Leveling System:
+
+Xp is a way to quantify a person's activity and devotion to a server. By sending messages, you gain xp. You can check out your xp stats with these commands:
 
 `;xp` : See how much xp you have until the next level
 
 `;rank` : See what your current rank in the server is.
 
-The amount of xp you get per message sent is inversely proportional to the amount of messages sent in the last minute. This is to prevent people from just spamming to grind large amounts of xp, but to show who is truly most devoted to the server.
+The amount of xp you get per message sent is inversely proportional to the amount of messages the member has sent in the last minute. This is to prevent people from just spamming messages to receive large amounts of xp, but to show who is truly most devoted to the server
+
+### Xp Channels
+
+An xp channel, as the name suggests, is a channel where you can gain xp. **By default all channels in the server are xp channels.**
+
+To manage xp channels, like bot channels, you need `administrator` permissions
+
+`;addbotchannel` : adds a channel to the list of bot channels
+
+`;removebotchannel` : removes a channel from the list of bot channels
+
+`;allbotchannel` : makes every channel in the server a bot channel
+
+`;removeallbotchannels` : removes every channel from the server from the list of bot channels
+
 ### Games:
 `;ttt [player]` : Challenge a user to a game of Tic Tac Toe. 
+
+`;uno [list of players]` : Challenge that group of players to uno. If a member is mentioned more than once, then it will only put them in once. **Warning: Uno is still pretty buggy and will also spam dms.** Alternative aliases: `no_u`, `nou`
+
 ### Other Commands: 
 
-These commands are for extra fun and for things that wouln't fit into the main `;cut` command or any of the other categories. 
+These commands are for extra fun and for things that wouln't fit into the main `;cut` command or any of the other categories. They are just quick, simple, and enjoyable little things.
 
 `;ping`: Test to see if the bot is online and get the ping in miliseconds. In return you get a funny Youmu message.
 
@@ -85,9 +125,13 @@ These commands are for extra fun and for things that wouln't fit into the main `
 
 `;inspire`:  Generates an (un)inspirational quote with [Inspirobot's API](https://inspirobot.me/)
 
+`;skin [mc user]`: get a 3-dimensional rendering of a Minecraft player's skin 
 # How to add to your server
+
+You can ask me on discord RamRam#0001 to send you an invite link, but I may decline. I do not have the link public since the bot is unable to get verified and is capped to 100 servers
+
 Currently, since I am not old enough to verify any of my Discord bots without parental consent (which they do not consent), you have to download this yourself and host it. I use replit for hosting since it is the easiest way for me to be able to code while at school. 
 
-However, It is really easy to host with replit, you can just fork [this repl](https://replit.com/@4gboframram/Youmu-bot) and create a secret named `TOKEN` with the value of another bot's token. Give the bot admin priveleges in the discord developer portal, hit run and go to [uptimerobot](https://uptimerobot.com/) and make an http monitor that pings the site the repl created every at least 30 minutes to keep the repl online almost 24/7. Now all you have to do is invite the bot to your server and you're done. 
+However, It is really easy to host with replit, you can just fork [this repl](https://replit.com/@4gboframram/Youmu-bot) and create a secret named `TOKEN` with the value of another bot's token. Give the bot admin priveleges in the discord developer portal, hit run and go to [uptimerobot](https://uptimerobot.com/) and make an http monitor that pings the site the repl created every at least 30 minutes to keep the repl online almost 24/7. Now all you have to do is invite the bot to your server and you're done. (Also the repl has wip features that may or may not be documented or may not work if you fork it while I'm still working on it)
 
 For self-hosting, clone this github repo, go to `main.py` and delete `from keep_alive import keep_alive` and `keep_alive()` because if you just keep those in the code you'll be hosting an unnecessary web app that does nothing for you and wasting memory and cpu. Create a `.env` that contains `TOKEN=[token]` where `[token]` is your bot's token. 
