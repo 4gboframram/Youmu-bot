@@ -103,7 +103,7 @@ class BotChannelDB: #also works for xp too
 		self.cursor.execute(f"SELECT * FROM channels")
 		return [channel[0] for channel in self.cursor.fetchall()]
 
-class PrefixDB(LevelDB):
+class PrefixDB:
 	def __init__(self, name):
 		self.name=name
 
@@ -114,5 +114,34 @@ class PrefixDB(LevelDB):
 		record = self.cursor.fetchall()
 		print("SQLite Database Version is: ", record)
 
+	def add_guild(self, guild_id):
+		self.cursor.execute(f"CREATE TABLE IF NOT EXISTS g{guild_id}(prefixes, UNIQUE(prefixes))")
+		self.connection.commit()
 
+	def add_prefix(self, guild_id, prefix):
+		self.cursor.execute(f"INSERT INTO g{guild_id} VALUES ('{prefix}') ")
+		self.connection.commit()
+
+	def remove_prefix(self, guild_id, prefix):
+		sql=f"DELETE FROM g{guild_id} WHERE prefixes='{prefix}'"
+		self.cursor.execute(sql)
+
+	def get_prefixes(self, guild_id):
+		self.cursor.execute(f"SELECT prefixes FROM 'g{guild_id}'")
+		return [prefix[0] for prefix in self.cursor.fetchall()]
+
+	def print_table(self, guild_id):
+		self.cursor.execute(f"SELECT * FROM g{guild_id}")
+		print([prefix[0] for prefix in self.cursor.fetchall()])
+
+	def list_of_tables(self):
+		self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' ORDER BY 1;")
+		try:
+			return list(zip(*self.cursor.fetchall()))[0]
+		except IndexError: return []
+
+if __name__=='__main__':
+	prefix=PrefixDB('prefixes')
+	prefix.add_prefix(800906950841073675, 'pog')
+	prefix.print_table(800906950841073675)
 	

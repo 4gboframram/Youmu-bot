@@ -111,11 +111,39 @@ To manage xp channels, like bot channels, you need `administrator` permissions
 
 `;uno [list of players]` : Challenge that group of players to uno. If a member is mentioned more than once, then it will only put them in once. **Warning: Uno is still pretty buggy and will also spam dms.** Alternative aliases: `no_u`, `nou`
 
+### Art Finding (Gelbooru)
+These are commands that can be used to search for random art on [Gelbooru](gelbooru.com) for a character. There is a version of each command with an NSFW filter, and one without the filter that can only be used in NSFW channels. 
+
+**As with all NSFW filters, this will never be perfect, no matter how many tags or artists you exclude. The developer of this bot is not responsible for any harm done to the users of this bot when using commands.** 
+
+The filter is identical to the one used in [Tenshi Bot](https://github.com/KawashiroDev/TenshiBot/).
+
+Now that the disclaimers are out of the way, here are the commands:
+
+`;char [tag]` : search Gelbooru for random art with that tag, usually a character. This uses the NSFW filter. **This should use underscores (_) in the tag and not spaces and should be surrounded by quotes just in case.** If you are using multiple tags, the tags should be inputted the same way they are put into the url of the browser.
+
+`;charnf [tag]` : same as `;char` but without the NSFW filter.
+
+Since this bot is directed towards the Touhou fandom, there are some extra aliases for searching art of a few different popular characters provided below. 
+
+You can get the version with no NSFW filter by appending 'nf' to the end. In parenthesis are other aliases for the character in addition to the name given. **The name of the characters here are capitalized for neatness, but should be lowercase when inputting the command**
+
+**List of Characters**
+
+- Reimu `(miko)`
+- Marisa
+- Flandre `(flan)`
+- Remilia `(remi)`
+- Youmu
+- Yuyuko `(yuyu)`
+- Sakuya
+- Patchouli `(patchy)`
+
 ### Other Commands: 
 
 These commands are for extra fun and for things that wouln't fit into the main `;cut` command or any of the other categories. They are just quick, simple, and enjoyable little things.
 
-`;ping`: Test to see if the bot is online and get the ping in miliseconds. In return you get a funny Youmu message.
+`;ping`: Test to see if the bot is online and get the ping in miliseconds. In return, you get a funny Youmu message.
 
 `;rate "[thing]"`: Rates a thing out of 10. *For technical details, this is computed by taking the hash of the `[thing]` argument mod 11, or with code: `hash(thing)%11`*
 
