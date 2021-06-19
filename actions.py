@@ -3,6 +3,7 @@ from discord.ext import commands
 import asyncio
 from PIL import Image
 import random
+import io
 
 class NoMemberPerms(Exception): #Just used for an if statement
 	pass
@@ -215,11 +216,13 @@ class Color: #Minus
 		author_highest_pos=ctx.author.roles[-1].position
 		if (ctx.author.guild_permissions.manage_roles and author_highest_pos>role.position) or ctx.author.id==ctx.guild.owner_id:
 			try:
-				await role.edit(reason='invoked with ;cut command', color=self.value)
-
-				img = Image.new('RGB', (100, 100), hex(self.value).replace('0x', '#'))
-				img.save('color.png')	
-				await ctx.send(f'{role.mention} has had their color cut to {hex(self.value)}', file=discord.File('color.png'))
+				await role.edit(reason='invoked with ;cut command', colour=self.value)
+				color = f"#{self.value:06X}"
+				img = Image.new('RGB', (100, 100), color)
+				file = io.BytesIO()
+				img.save(file, format="png", optimize=True, compress_level=9)
+				file.seek(0)
+				await ctx.send(f'{role.mention} has had their color cut to {color}', file=discord.File(file, "color.png"))
 			except discord.errors.Forbidden: 
 				await ctx.send("I do not have permissions to edit that role. Make sure that I have permissions to edit roles, and my role is above that role.")
 		else: 
