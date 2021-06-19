@@ -39,6 +39,11 @@ except ImportError:
 	os.system('pip install discord-components')
 	from discord_components import DiscordComponents, Button, ButtonStyle
 
+TOKEN = os.getenv('TOKEN')
+
+if TOKEN is None:
+	raise ValueError("Please set your discord bot token to the TOKEN enviroment variable")
+
 db=LevelDB('Levels')
 bot_channel_db=BotChannelDB('botchannels')
 xp_channel_db=BotChannelDB('xpchannels')
@@ -642,4 +647,4 @@ async def owner(ctx, guild_id: int, *, message):
 
 
 keep_alive()
-bot.run(os.getenv('TOKEN'))
+bot.run(TOKEN)
