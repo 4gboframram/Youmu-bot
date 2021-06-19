@@ -7,6 +7,7 @@ import asyncio
 from aiohttp import web
 import typing
 import pathlib
+from contextlib import asynccontextmanager
 
 routes = web.RouteTableDef()
 
@@ -16,19 +17,25 @@ async def home(req):
     return web.Response(text="Bot is online")
 
 
-async def keep_alive(address: typing.Union[pathlib.Path, tuple[str, int]]) -> None:
+@asynccontextmanager
+async def Runner(runner: web.BaseRunner):
+    await runner.setup()
+    try:
+        yield runner
+    finally:
+        runner.cleanup()
+
+
+async def keep_alive(address: typing.Union[pathlib.Path, tuple[str, int], None]) -> None:
     app = web.Application()
     app.add_routes(routes)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    if isinstance(address, tuple):
-        site = web.TCPSite(runner, address[0], int(address[1]))
-    else:
-        site = web.UnixSite(runner, str(address))
-    await site.start()
-    print(f"Listening for HTTP connections in {site.name}")
-    try:
+    async with Runner(web.AppRunner(app)) as runner:
+        if isinstance(address, tuple):
+            site = web.TCPSite(runner, address[0], int(address[1]))
+        else:
+            site = web.UnixSite(runner, str(address))
+        await site.start()
+        print(f"Listening for HTTP connections in {site.name}")
         while True:
             await asyncio.sleep(3600)
-    finally:
-        await runner.cleanup()
+    
