@@ -23,7 +23,7 @@ async def Runner(runner: web.BaseRunner):
     try:
         yield runner
     finally:
-        runner.cleanup()
+        await runner.cleanup()
 
 
 async def keep_alive(address: typing.Union[pathlib.Path, tuple[str, int], None]) -> None:
