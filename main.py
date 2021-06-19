@@ -61,6 +61,8 @@ def is_botchannel(ctx):
 @bot.event
 async def on_ready():
 	print(f'{bot.user.name} has connected')
+	asyncio.create_task(keep_alive(), name="status server")
+	print("Status server is starting")
 	#print([guild for guild in bot.guilds])
 	global guild_ids
 	guild_ids=[guild.id for guild in bot.guilds]
@@ -630,5 +632,4 @@ async def owner(ctx, guild_id: int, *, message):
 	await ctx.author.send(invite.url)
 
 
-keep_alive()
 bot.run(TOKEN)

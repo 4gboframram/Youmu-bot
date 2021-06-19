@@ -2,7 +2,6 @@ discord
 skingrabber
 discord-py-slash-command
 discord-components
-flask
 ply
 pillow
 bs4

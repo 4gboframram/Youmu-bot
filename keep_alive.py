@@ -1,21 +1,29 @@
-#This file is used to keep the replit active
-#If you're using replit, you can use this.
-#To use, use uptimerobot to ping the 
-#site replit creates every at least 20 minutes
+# This file is used to keep the replit active
+# If you're using replit, you can use this.
+# To use, use uptimerobot to ping the
+# site replit creates every at least 20 minutes
 
-from flask import Flask
-from threading import Thread
+import asyncio
+from aiohttp import web
 
-app = Flask('')
+routes = web.RouteTableDef()
 
-@app.route('/')
-def home():
-    return "Bot is online"
 
-def run():
-  app.run(host='0.0.0.0' ,port=8000)
+@routes.get("/")
+async def home():
+    return web.Response(text="Bot is online")
 
-def keep_alive():  
-    t = Thread(target=run)
-    t.start()
 
+async def keep_alive():
+    app = web.Application()
+    app.add_routes(routes)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', 8000)
+    await site.start()
+    print(f"Listening for HTTP connections in {site.name}")
+    try:
+        while True:
+            await asyncio.sleep(3600)
+    finally:
+        await runner.cleanup()
