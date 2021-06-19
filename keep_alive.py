@@ -10,11 +10,11 @@ routes = web.RouteTableDef()
 
 
 @routes.get("/")
-async def home():
+async def home(req):
     return web.Response(text="Bot is online")
 
 
-async def keep_alive(req):
+async def keep_alive():
     app = web.Application()
     app.add_routes(routes)
     runner = web.AppRunner(app)
