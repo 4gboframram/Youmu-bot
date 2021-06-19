@@ -9,8 +9,12 @@ python = "^3.8"
 flask = "^2.0.1"
 ply = "^3.11"
 discord = "^1.0.1"
-
-[tool.poetry.dev-dependencies]
+bs4 = "^0.0.1"
+skingrabber=""
+discord-py-slash-command=""
+discord-components=""
+pillow=""
+lxml=""
 
 [build-system]
 requires = ["poetry>=0.12"]
