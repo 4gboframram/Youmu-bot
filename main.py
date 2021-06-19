@@ -70,12 +70,16 @@ def is_botchannel(ctx):
 @bot.event
 async def on_ready():
 	print(f'{bot.user.name} has connected')
+	
 	if args.unix:
 		address = args.unix[0]
-	else:
+	elif args.tcp:
 		address = tuple(args.tcp)
-	asyncio.create_task(keep_alive(address), name="status server")
-	print("Status server is starting")
+	else:
+		address = None
+	if address is not None:
+		asyncio.create_task(keep_alive(address), name="status server")
+		print("Status server is starting")
 	#print([guild for guild in bot.guilds])
 	global guild_ids
 	guild_ids=[guild.id for guild in bot.guilds]
