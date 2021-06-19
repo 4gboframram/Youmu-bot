@@ -14,7 +14,7 @@ async def home():
     return web.Response(text="Bot is online")
 
 
-async def keep_alive():
+async def keep_alive(req):
     app = web.Application()
     app.add_routes(routes)
     runner = web.AppRunner(app)
