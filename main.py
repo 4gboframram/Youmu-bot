@@ -17,27 +17,16 @@ import error_handling
 from constants import Constants, YoumuEmbed
 import sauces
 import sys
-print(sys.modules.keys())
-try:
-	import discord
-	from discord.ext import commands
-except ImportError: 
-	os.system('pip install discord')
-	import discord
-	from discord.ext import commands
+import discord
+from discord.ext import commands
+from skingrabber import skingrabber
+from discord_slash import SlashCommand, SlashContext
+from discord_components import DiscordComponents, Button, ButtonStyle
 
-try: from skingrabber import skingrabber
-except ImportError: os.system('pip install skingrabber')
+TOKEN = os.getenv('TOKEN')
 
-try: from discord_slash import SlashCommand, SlashContext
-except ImportError:
-	os.system('pip install discord-py-slash-command')
-	from discord_slash import SlashCommand, SlashContext
-
-try: from discord_components import DiscordComponents, Button, ButtonStyle
-except ImportError:
-	os.system('pip install discord-components')
-	from discord_components import DiscordComponents, Button, ButtonStyle
+if TOKEN is None:
+	raise ValueError("Please set your discord bot token to the TOKEN enviroment variable")
 
 db=LevelDB('Levels')
 bot_channel_db=BotChannelDB('botchannels')
@@ -642,4 +631,4 @@ async def owner(ctx, guild_id: int, *, message):
 
 
 keep_alive()
-bot.run(os.getenv('TOKEN'))
+bot.run(TOKEN)

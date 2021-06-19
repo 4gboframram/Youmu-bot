@@ -6,8 +6,6 @@ import random
 import asyncio
 import os
 import sys
-if not 'lxml' in list(sys.modules.keys()):
-	os.system('pip install lxml') #need
 
 booruappend = ''
 booru = 'gelbooru.com'
