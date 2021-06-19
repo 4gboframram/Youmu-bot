@@ -2,10 +2,7 @@ import os
 import asyncio
 import discord
 from typing import Union
-try: from discord_components import Button, ButtonStyle
-except ImportError:
-	os.system('pip install discord-components')
-	from discord_components import Button, ButtonStyle
+from discord_components import Button, ButtonStyle
 
 class Tile: 
 	def __init__(self, owner:Union[discord.Member, None]=None):

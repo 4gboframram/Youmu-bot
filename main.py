@@ -17,27 +17,11 @@ import error_handling
 from constants import Constants, YoumuEmbed
 import sauces
 import sys
-print(sys.modules.keys())
-try:
-	import discord
-	from discord.ext import commands
-except ImportError: 
-	os.system('pip install discord')
-	import discord
-	from discord.ext import commands
-
-try: from skingrabber import skingrabber
-except ImportError: os.system('pip install skingrabber')
-
-try: from discord_slash import SlashCommand, SlashContext
-except ImportError:
-	os.system('pip install discord-py-slash-command')
-	from discord_slash import SlashCommand, SlashContext
-
-try: from discord_components import DiscordComponents, Button, ButtonStyle
-except ImportError:
-	os.system('pip install discord-components')
-	from discord_components import DiscordComponents, Button, ButtonStyle
+import discord
+from discord.ext import commands
+from skingrabber import skingrabber
+from discord_slash import SlashCommand, SlashContext
+from discord_components import DiscordComponents, Button, ButtonStyle
 
 TOKEN = os.getenv('TOKEN')
 

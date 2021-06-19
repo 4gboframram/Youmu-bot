@@ -2,10 +2,7 @@ import os
 import discord
 import asyncio 
 from random import choice
-try: from discord_components import DiscordComponents, Button, ButtonStyle
-except ImportError:
-	os.system('pip install discord-components')
-	from discord_components import DiscordComponents, Button, ButtonStyle
+from discord_components import DiscordComponents, Button, ButtonStyle
 
 async def presence_hourly(bot, presences, last_presence, presence_is_looping):
 	if not presence_is_looping: #prevent from looping multiple times If on_ready() is called multiple times
