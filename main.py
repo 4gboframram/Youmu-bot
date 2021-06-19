@@ -22,11 +22,20 @@ from discord.ext import commands
 from skingrabber import skingrabber
 from discord_slash import SlashCommand, SlashContext
 from discord_components import DiscordComponents, Button, ButtonStyle
+import argparse
+import pathlib
 
 TOKEN = os.getenv('TOKEN')
 
 if TOKEN is None:
 	raise ValueError("Please set your discord bot token to the TOKEN enviroment variable")
+
+parser = argparse.ArgumentParser(description="Youmu bot, a wip Discord bot with many functionalities.")
+listen_group = parser.add_mutually_exclusive_group()
+listen_group.add_argument("--unix", nargs=1, type=pathlib.Path, metavar="path", help="Create a status web server listening in a unix socket")
+tcp_group = listen_group.add_argument_group("--tcp")
+listen_group.add_argument("--tcp", nargs=2, type=str, metavar=("address", "port"), help="Create a status web server listening in a tcp socket")
+args = parser.parse_args()
 
 db=LevelDB('Levels')
 bot_channel_db=BotChannelDB('botchannels')
@@ -61,7 +70,11 @@ def is_botchannel(ctx):
 @bot.event
 async def on_ready():
 	print(f'{bot.user.name} has connected')
-	asyncio.create_task(keep_alive(), name="status server")
+	if args.unix:
+		address = args.unix[0]
+	else:
+		address = tuple(args.tcp)
+	asyncio.create_task(keep_alive(address), name="status server")
 	print("Status server is starting")
 	#print([guild for guild in bot.guilds])
 	global guild_ids
