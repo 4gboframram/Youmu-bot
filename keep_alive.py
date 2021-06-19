@@ -12,7 +12,7 @@ routes = web.RouteTableDef()
 
 
 @routes.get("/")
-async def home():
+async def home(request):
     return web.Response(text="Bot is online")
 
 
