@@ -599,6 +599,17 @@ async def patchouli(ctx):
 async def patchouli_nofilter(ctx):
 	await sauces.char_nofilter(ctx, 'patchouli_knowledge')
 
+@bot.command(aliases=['baka', 'thestrongest'])
+@commands.check(is_botchannel)
+async def cirno(ctx):
+	await sauces.char(ctx, 'cirno')
+
+@bot.command(name='cirnonf', aliases=['bakanf', 'thestrongestnf'])
+@commands.check(is_botchannel)
+@commands.is_nsfw()
+async def cirno_nofilter(ctx):
+	await sauces.char_nofilter(ctx, 'patchouli_knowledge')
+	
 @bot.command(name='char')
 @commands.check(is_botchannel)
 async def char(ctx, *, tag):
