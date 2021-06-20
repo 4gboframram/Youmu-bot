@@ -128,6 +128,8 @@ Since this bot is directed towards the Touhou fandom, there are some extra alias
 
 You can get the version with no NSFW filter by appending 'nf' to the end. In parenthesis are other aliases for the character in addition to the name given. **The name of the characters here are capitalized for neatness, but should be lowercase when inputting the command**
 
+**As of the newest update, when using no filter mode, the results will only be NSFW due to popular demand**
+
 **List of Characters**
 
 - Reimu `(miko)`
