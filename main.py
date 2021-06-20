@@ -612,6 +612,17 @@ async def cirno(ctx):
 async def cirno_nofilter(ctx):
 	await sauces.char_nofilter(ctx, 'cirno')
 
+@bot.command()
+@commands.check(is_botchannel)
+async def satori(ctx):
+	await sauces.char(ctx, 'komeiji_satori')
+
+@bot.command(name='satorinf',)
+@commands.check(is_botchannel)
+@commands.is_nsfw()
+async def cirno_nofilter(ctx):
+	await sauces.char_nofilter(ctx, 'komeiji_satori')
+
 @bot.command(name='char')
 @commands.check(is_botchannel)
 async def char(ctx, *, tag):
