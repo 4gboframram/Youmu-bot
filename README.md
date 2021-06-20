@@ -138,7 +138,8 @@ You can get the version with no NSFW filter by appending 'nf' to the end. In par
 - Yuyuko `(yuyu)`
 - Sakuya
 - Patchouli `(patchy)`
-
+- Cirno `(baka, thestrongest)`
+- Satori
 ### Other Commands: 
 
 These commands are for extra fun and for things that wouln't fit into the main `;cut` command or any of the other categories. They are just quick, simple, and enjoyable little things.
@@ -160,6 +161,6 @@ You can ask me on discord RamRam#0001 to send you an invite link, but I may decl
 
 Currently, since I am not old enough to verify any of my Discord bots without parental consent (which they do not consent), you have to download this yourself and host it. I use replit for hosting since it is the easiest way for me to be able to code while at school. 
 
-However, It is really easy to host with replit, you can just fork [this repl](https://replit.com/@4gboframram/Youmu-bot) and create a secret named `TOKEN` with the value of another bot's token. Give the bot admin priveleges in the discord developer portal, hit run and go to [uptimerobot](https://uptimerobot.com/) and make an http monitor that pings the site the repl created every at least 30 minutes to keep the repl online almost 24/7. Now all you have to do is invite the bot to your server and you're done. (Also the repl has wip features that may or may not be documented or may not work if you fork it while I'm still working on it)
+However, It is really easy to host with replit, you can just fork [this repl](https://replit.com/@4gboframram/Youmu-bot) and create a secret named `TOKEN` with the value of another bot's token. Give the bot admin priveleges in the discord developer portal, hit run and go to [uptimerobot](https://uptimerobot.com/) and make an http monitor that pings the site the repl creates every at least 30 minutes to keep the repl online almost 24/7. Now all you have to do is invite the bot to your server and you're done. (Also the repl has wip features that may or may not be documented or may not work if you fork it while I'm still working on it)
 
 For self-hosting, clone this github repo, go to `main.py` and delete `from keep_alive import keep_alive` and `keep_alive()` because if you just keep those in the code you'll be hosting an unnecessary web app that does nothing for you and wasting memory and cpu. Create a `.env` that contains `TOKEN=[token]` where `[token]` is your bot's token. 
