@@ -608,8 +608,8 @@ async def cirno(ctx):
 @commands.check(is_botchannel)
 @commands.is_nsfw()
 async def cirno_nofilter(ctx):
-	await sauces.char_nofilter(ctx, 'patchouli_knowledge')
-	
+	await sauces.char_nofilter(ctx, 'cirno')
+
 @bot.command(name='char')
 @commands.check(is_botchannel)
 async def char(ctx, *, tag):
