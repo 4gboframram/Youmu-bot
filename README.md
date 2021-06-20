@@ -3,7 +3,7 @@ This is Youmu bot, a wip Discord bot with many functionalities.
 
 This started as just a moderation bot where all of its moderation commands are built into a single command: `;cut` (or `/cut` if you're into that sort of thing), but has turned into a lot more. 
 
-**There is now a wiki that is a work in progress** :D
+**There is now a [wiki](https://github.com/4gboframram/Youmu-bot/wiki) that is a work in progress** :D
 
 ## Inspiration
 One day, my friend who roleplays as Youmu joined my Discord server. I was thinking about making a Discord bot for them and they agreed that I should make one. Then I brought up a stupid idea: What if I made a Discord bot where all of the commands are in a single command? I thought about it overnight and concluded it was a stupid, yet fun idea. It would allow me to get familiar with creating lexers and parsers.
