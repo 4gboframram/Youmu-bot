@@ -1,4 +1,3 @@
-
 import discord
 import aiohttp
 from bs4 import BeautifulSoup
@@ -74,7 +73,7 @@ async def char(ctx, char):
 async def char_nofilter(ctx, char):
 		em = discord.Embed(title=' ', description=' ', colour=random.randint(0,0xFFFFFF))
 		
-		booruurl = 'http://' + booru + '/index.php?page=dapi&s=post&q=index&tags=' + boorutags_base.replace('rating:safe', '') + '+' + char
+		booruurl = 'http://' + booru + '/index.php?page=dapi&s=post&q=index&tags=' + boorutags_base.replace('rating:safe', '-rating:safe') + '+' + char
 		embed_name = 'No filter, huh?'
 		async with aiohttp.ClientSession() as session:
 			async with session.get(booruurl) as r:
