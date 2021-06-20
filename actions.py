@@ -3,6 +3,8 @@ import asyncio
 from PIL import Image
 import random
 import io
+import os
+
 class NoMemberPerms(Exception): #Just used for an if statement
 	pass
 
@@ -105,11 +107,12 @@ class Rp: #Reduce
 		self.user_id=user_id
 	
 	async def run(self, ctx):
-		member=await ctx.guild.fetch_member(self.user_id)
-		filename=random.choice(["cut.gif", "cut2.gif", "cut3.gif"])
-		embed=discord.Embed(title="Cut!", description=f'{ctx.author.mention} slices {member.mention} in half', color=0x53cc74) 
-		embed.set_image(url=f"attachment://{filename}")
-		file = discord.File(filename)
+		member = await ctx.guild.fetch_member(self.user_id)
+		filename = random.choice(["cut.gif", "cut2.gif", "cut3.gif"])
+		path = os.path.join("assets", filename)
+		embed = discord.Embed(title="Cut!", description=f'{ctx.author.mention} slices {member.mention} in half', color=0x53cc74) 
+		embed.set_image(url=f"attachment://cut.gif")
+		file = discord.File(path, filename="cut.gif")
 		embed.set_author(name="Youmu Bot", icon_url='https://cdn.discordapp.com/avatars/847655832169480222/16c78890f9383ec318b4560675410120.webp?size=2048')
 		await ctx.send(embed=embed, file=file)
 
