@@ -1,5 +1,7 @@
 ###################
 #Bot Created by #RamRam#0001 on discord
+#Bugfixing and optimization
+#by PervyStella#5667 on discord
 ###################
 import os
 from keep_alive import keep_alive
