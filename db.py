@@ -1,147 +1,187 @@
-import sqlite3
+import aiosqlite
+import typing
+import dataclasses
 
-async def on_level_up():
-		print('Level up!')
 
-class LevelDB:
-	def __init__(self,name):
-		self.update_value=10
-		self.rule=lambda x : self.update_value*(x*x+5)
-		self.name=name
+class classproperty:
+    def __init__(self, fget: typing.Callable, fset: typing.Optional[typing.Callable] = None) -> None:
+        if not isinstance(fget, (classmethod, staticmethod)):
+            fget = classmethod(fget)
+        if fset is not None and not isinstance(fget, (classmethod, staticmethod)):
+            fset = classmethod(fset)
 
-		self.connection = sqlite3.connect(f'{self.name}.db')
-		self.cursor=self.connection.cursor()
-		sqlite_select_Query = "select sqlite_version();"
-		self.cursor.execute(sqlite_select_Query)
-		record = self.cursor.fetchall()
-		print("SQLite Database Version is: ", record)
+        self.__fget = fget
+        self.__fset = fset
 
-	def add_guild(self, guild_id):	
-		self.cursor.execute(f"CREATE TABLE IF NOT EXISTS g{guild_id}(id INTEGER, level INTEGER, exp INTEGER, UNIQUE(id))")
-		self.connection.commit()
+    def __get__(self, obj, cls=None):
+        if cls is None:
+            cls = type(obj)
+        return self.__fget.__get__(obj, cls)()
 
-	def add_member(self, guild_id, member_id):
-		self.cursor.execute(f"INSERT INTO g{guild_id}(id, level, exp) VALUES ({member_id}, 0, 0)")
-		self.connection.commit()
+    def __set__(self, obj, value):
+        if self.__fset is None:
+            raise AttributeError("can't set attribute")
+        cls = type(obj)
+        return self.__fset.__get__(obj, cls)(value)
 
-	async def add_xp(self, guild_id, member_id, multiplier=1, levelup_event=on_level_up, *args):
-		self.cursor.execute(f"SELECT id, level, exp FROM 'g{guild_id}' WHERE id={member_id}")
+    def setter(self, func: typing.Callable) -> classproperty:
+        if not isinstance(func, (classmethod, staticmethod)):
+            func = classmethod(func)
+        self.__fget = func
+        return self
 
-		member=self.cursor.fetchall()[0]
-		self.current_member_id=member[0]
-		self.current_member_level=member[1]
-		self.current_member_exp=member[2]
 
-		self.cursor.execute(f"UPDATE g{guild_id} SET exp={member[2]+int(self.update_value*multiplier)} WHERE id={member_id}")
-		self.connection.commit()
+class LevelsTable:
+    __slots__ = "__connection"
 
-		self.cursor.execute(f"SELECT id, level, exp FROM 'g{guild_id}' WHERE id={member_id}")
-		member=self.cursor.fetchall()[0]
-		if member[2]>=self.rule(member[1]):
-			self.cursor.execute(f"UPDATE g{guild_id} SET level={member[1]+1}, exp=0 WHERE id={member_id}")
-			self.connection.commit()
+    def __init__(self, connection):
+        self.__connection = connection
 
-			self.cursor.execute(f"SELECT id, level, exp FROM 'g{guild_id}' WHERE id={member_id}")
-			member=self.cursor.fetchall()[0]
-			await levelup_event(*args)
-		self.connection.commit()
-		print(member)
-		return member
-		
-	def print_table(self, guild_id):
-		self.cursor.execute(f"SELECT * FROM g{guild_id}")
-		print(self.cursor.fetchall())
+    @property
+    def connection(self) -> aiosqlite.Connection:
+        return self.__connection
 
-	def get_member_stats(self, guild_id, member_id):
-		self.cursor.execute(f"SELECT id, level, exp FROM 'g{guild_id}' WHERE id={member_id}")
-		member=self.cursor.fetchall()[0]
-		return member
+    @classmethod
+    def needed_exp_to_levelup(cls, current_level: int) -> int:
+        return cls.update_value * (current_level * current_level + 5)
 
-	def get_sorted_table(self, guild_id):
-		self.cursor.execute(f'SELECT * FROM g{guild_id} ORDER BY level DESC, exp DESC')
-		table=self.cursor.fetchall()
-		print(table)
-		return table
+    @classproperty
+    def update_value(cls):
+        return 10
 
-	def get_member_rank(self, guild_id, member_id):
-		rank=self.get_sorted_table(guild_id).index(self.get_member_stats(guild_id, member_id))+1
-		print(rank)
-		return rank
+    async def add_member(self, guild_id: int, member_id: int) -> None:
+        async with self.connection.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await self.__add_member(cursor, guild_id, member_id)
 
-	def list_of_tables(self):
-		self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' ORDER BY 1;")
-		try:
-			return  list(zip(*self.cursor.fetchall()))[0]
-		except IndexError: return []
+    async def __add_member(self, cursor: aiosqlite.Cursor, guild_id: int, member_id: int, level: typing.Optional[int] = None, exp=typing.Optional[int]=None) -> None:
+        await cursor.execute(
+            "insert into levels(guild_id, member_id, level, exp) values (?, ?, ?, ?)", (guild_id, member_id, level, exp))
 
-class BotChannelDB: #also works for xp too 
-	def __init__(self, name):
-		self.name=name
+    async def add_exp(self, guild_id: int, member_id: int, exp: int) -> tuple[int, int]:
+        """
+        It creates the member if it doesnt exists
+        Returns a tuple of the old and new level
+        """
+        async with self.connection.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            cursor.execute(
+                "select level, exp from levels where guild_id=? and member_id=?", (guild_id, member_id))
+            try:
+                old_level, old_exp = await cursor.fetchone()
+            except TypeError:
+                old_level = 1
+                old_exp = 0
+                await self.__add_member(cursor, guild_id, member_id)
+            new_exp = old_exp
+            new_level = old_exp
+            needed_exp_to_levelup = self.needed_exp_to_levelup(new_level)
+            while new_exp >= needed_exp_to_levelup:
+                new_level += 1
+                new_exp -= needed_exp_to_levelup
+                needed_exp_to_levelup = self.needed_exp_to_levelup(new_level)
+            await cursor.execute("update levels set level=?, exp=? where guild_id=? and member_id=?",
+                                 (new_level, old_level, guild_id, member_id))
+            return old_level, new_level
 
-		self.connection = sqlite3.connect(f'{self.name}.db')
-		self.cursor=self.connection.cursor()
-		sqlite_select_Query = "select sqlite_version();"
-		self.cursor.execute(sqlite_select_Query)
-		record = self.cursor.fetchall()
-		print("SQLite Database Version is: ", record)
-		self.cursor.execute(f"CREATE TABLE IF NOT EXISTS channels (channel INTEGER, UNIQUE(channel))")
-		self.connection.commit()
-		
-	def add_channel(self, channel_id):
-		self.cursor.execute(f"INSERT INTO channels VALUES ({channel_id})")
-		self.connection.commit()
+    @dataclasses.dataclass(frozen=True, order=True)
+    class Stats:
+        guild_id: int = dataclasses.field(hash=True)
+        member_id: int = dataclasses.field(hash=True)
+        level: int = dataclasses.field(hash=False, compare=False)
+        exp: int = dataclasses.field(hash=False, compare=False)
 
-	def remove_channel(self, channel_id):
-		sql=f'DELETE FROM channels WHERE channel={channel_id}'
-		self.cursor.execute(sql)
+    async def __get_member_stats(self, cursor: aiosqlite.Cursor, guild_id: int, member_id: int) -> Stats:
+        await cursor.execute("select guild_id, member_id, level, exp from levels where guild_id=? and member_id=?", (guild_id, member_id))
+        row = await cursor.fetchone()
+        return Stats(*row)
 
-	def print_table(self):
-		self.cursor.execute(f"SELECT * FROM channels")
-		print(self.cursor.fetchall())
-	
-	def get_iterable(self):
-		self.cursor.execute(f"SELECT * FROM channels")
-		return [channel[0] for channel in self.cursor.fetchall()]
+    async def get_member_stats(self, guild_id: int, member_id: int) -> Stats:
+        async with self.connection.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await self.__get_member_stats(cursor, guild_id, member_id)
 
-class PrefixDB:
-	def __init__(self, name):
-		self.name=name
+    async def get_member_rank(self, guild_id: int, member_id: int) -> int:
+        async with self.connection.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            stats = self.__get_member_stats(cursor, guild_id, member_id)
+            await cursor.execute("select count(distinct level) as rank from levels where level < ?", (stats.level,))
+            rank, = await cursor.fetchone()
 
-		self.connection = sqlite3.connect(f'{self.name}.db')
-		self.cursor=self.connection.cursor()
-		sqlite_select_Query = "select sqlite_version();"
-		self.cursor.execute(sqlite_select_Query)
-		record = self.cursor.fetchall()
-		print("SQLite Database Version is: ", record)
+# I would do something like the following in C++
+# template<static_string Name> class ChannelTable
+# In python the equivalent would be a metaclass or a class decorator
+# but to keep things simple we will just use a base class
 
-	def add_guild(self, guild_id):
-		self.cursor.execute(f"CREATE TABLE IF NOT EXISTS g{guild_id}(prefixes, UNIQUE(prefixes))")
-		self.connection.commit()
+class _ChannelsTable:
+    __slots__ = "__connection", "__name"
 
-	def add_prefix(self, guild_id, prefix):
-		self.cursor.execute(f"INSERT INTO g{guild_id} VALUES ('{prefix}') ")
-		self.connection.commit()
+    def __init__(self, connection, name):
+        self.__connection = connection
+        self.__name = name
 
-	def remove_prefix(self, guild_id, prefix):
-		sql=f"DELETE FROM g{guild_id} WHERE prefixes='{prefix}'"
-		self.cursor.execute(sql)
+    @property
+    def connection(self):
+        return self.__connection
 
-	def get_prefixes(self, guild_id):
-		self.cursor.execute(f"SELECT prefixes FROM 'g{guild_id}'")
-		return [prefix[0] for prefix in self.cursor.fetchall()]
+    def add_channel(self, channel_id: int) -> None:
+        async with self.connection.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            sql = f"insert into {self.__name}(channel) values (?)"
+            await cursor.execute(sql, (channel_id,))
+    
+    def remove_channel(self, channel_id: int) -> None:
+        async with self.connection.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            sql = f"delete from {self.__name}(channel) where channel=?"
+            await cursor.execute(sql, (channel_id,))
+    
+    async def __aiter__(self):
+        """
+        Iterate over all the channels in the table asynchronously
+        """
+        async with self.connection.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            sql = f"select channel from {self.__name}"
+            await cursor.execute(sql)
+            async for row in cursor:
+                yield row[0]
 
-	def print_table(self, guild_id):
-		self.cursor.execute(f"SELECT * FROM g{guild_id}")
-		print([prefix[0] for prefix in self.cursor.fetchall()])
+class BotChannelsTable(_ChannelsTable):
+    def __init__(self, connection: aiosqlite.Connection):
+        super().__init__(connection, "bot_channels")
 
-	def list_of_tables(self):
-		self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' ORDER BY 1;")
-		try:
-			return list(zip(*self.cursor.fetchall()))[0]
-		except IndexError: return []
 
-if __name__=='__main__':
-	prefix=PrefixDB('prefixes')
-	prefix.add_prefix(800906950841073675, 'pog')
-	prefix.print_table(800906950841073675)
-	
+class ExpChannelsTable(_ChannelsTable):
+    def __init__(self, connection: aiosqlite.Connection):
+        super().__init__(connection, "xp_channels")
+
+
+class PrefixTable:
+    __slots__ = "__connection"
+
+    def __init__(self, connection):
+        self.__connection = connection
+
+    @property
+    def connection(self):
+        return self.__connection
+
+    async def add_prefix(self, guild_id: int, prefix: str) -> None:
+        async with self.connection.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("insert into prefixes(guild_id, prefix) values (?, ?)", (guild_id, prefix))
+
+    async def remove_prefix(self, guild_id: int, prefix: str) -> None:
+        async with self.connection.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("delete from prefixes where guild_id=? and prefix=?)", (guild_id, prefix))
+
+    async def get_prefixes(self, guild_id: int) -> list[str]:
+        async with self.connection.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("select prefix from prefixes where guild_id=?)", (guild_id, ))
+            result = await cursor.fetchall()
+            return [prefix[0] for prefix in result]
+
+__all__ = ["PrefixTable", "ExpChannelsTable", "BotChannelsTable", "LevelsTable"]
