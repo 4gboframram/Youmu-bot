@@ -524,6 +524,29 @@ async def removeprefix(ctx, prefix):
 ################
 #Sauce
 ##############
+
+@bot.command(name='gelbooru', aliases=['gb'])
+@commands.check(is_botchannel)
+async def gelbooru(ctx, arg=''):
+	await sauces.char(ctx, arg)
+
+@bot.command(name='gelboorunf', aliases=['gbnf', 'gbnsfw'])
+@commands.check(is_botchannel)
+@commands.is_nsfw()
+async def gelbooru_nofilter(ctx, arg=''):
+	await sauces.char(ctx, arg, nsfw=True)
+
+@bot.command(name='gelboorua', aliases=['gba', 'gbanimated', 'gbanim'])
+@commands.check(is_botchannel)
+async def gelbooruanimated(ctx, arg=''):
+	await sauces.char(ctx, arg, animated=True)
+
+@bot.command(name='gelbooruanf', aliases=['gbanf', 'gbansfw', 'gbanimatednf', 'gbanimatednsfw', 'gbanimnf', 'gbanimnsfw'])
+@commands.check(is_botchannel)
+@commands.is_nsfw()
+async def gelbooruanimated_nofilter(ctx, arg=''):
+	await sauces.char(ctx, arg, nsfw=True, animated=True)
+
 @bot.command()
 @commands.check(is_botchannel)
 async def youmu(ctx):
@@ -533,7 +556,7 @@ async def youmu(ctx):
 @commands.check(is_botchannel)
 @commands.is_nsfw()
 async def youmu_nofilter(ctx):
-	await sauces.char_nofilter(ctx, 'konpaku_youmu')
+	await sauces.char(ctx, 'konpaku_youmu', nsfw=True)
 
 @bot.command(aliases=['yuyu'])
 @commands.check(is_botchannel)
@@ -544,7 +567,7 @@ async def yuyuko(ctx):
 @commands.check(is_botchannel)
 @commands.is_nsfw()
 async def yuyu_nofilter(ctx):
-	await sauces.char_nofilter(ctx, 'saigyouji_yuyuko')
+	await sauces.char(ctx, 'saigyouji_yuyuko', nsfw=True)
 
 @bot.command(aliases=['flan'])
 @commands.check(is_botchannel)
@@ -555,7 +578,7 @@ async def flandre(ctx):
 @commands.check(is_botchannel)
 @commands.is_nsfw()
 async def flandre_nofilter(ctx):
-	await sauces.char_nofilter(ctx, 'flandre_scarlet')
+	await sauces.char(ctx, 'flandre_scarlet', nsfw=True)
 
 @bot.command(aliases=['remi'])
 @commands.check(is_botchannel)
@@ -566,7 +589,7 @@ async def remilia(ctx):
 @commands.check(is_botchannel)
 @commands.is_nsfw()
 async def remilia_nofilter(ctx):
-	await sauces.char_nofilter(ctx, 'remilia_scarlet')
+	await sauces.char(ctx, 'remilia_scarlet', nsfw=True)
 
 @bot.command()
 @commands.check(is_botchannel)
@@ -579,7 +602,7 @@ async def marisa(ctx):
 @commands.is_nsfw()
 async def marisa_nofilter(ctx):
 	score_rng=randint(0,5)
-	await sauces.char_nofilter(ctx, f'kirisame_marisa+score:>={score_rng}')
+	await sauces.char(ctx, f'kirisame_marisa+score:>={score_rng}', nsfw=True)
 
 @bot.command(name='reimu', aliases=['miko'])
 @commands.check(is_botchannel)
@@ -592,7 +615,7 @@ async def reimu(ctx):
 @commands.is_nsfw()
 async def reimu_nofilter(ctx):
 	score_rng=randint(0,5)
-	await sauces.char_nofilter(ctx, f'Hakurei_Reimu+score:>={score_rng}')
+	await sauces.char(ctx, f'Hakurei_Reimu+score:>={score_rng}', nsfw=True)
 
 @bot.command(name='sakuya')
 @commands.check(is_botchannel)
@@ -605,7 +628,7 @@ async def sakuya(ctx):
 @commands.is_nsfw()
 async def sakuya_nofilter(ctx):
 	score_rng=randint(0,5)
-	await sauces.char_nofilter(ctx, f'izayoi_sakuya+-id:5237460+score:>={score_rng}')
+	await sauces.char(ctx, f'izayoi_sakuya+-id:5237460+score:>={score_rng}', nsfw=True)
 
 @bot.command(aliases=['patchy'])
 @commands.check(is_botchannel)
@@ -616,7 +639,7 @@ async def patchouli(ctx):
 @commands.check(is_botchannel)
 @commands.is_nsfw()
 async def patchouli_nofilter(ctx):
-	await sauces.char_nofilter(ctx, 'patchouli_knowledge')
+	await sauces.char(ctx, 'patchouli_knowledge', nsfw=True)
 
 @bot.command(aliases=['baka', 'thestrongest'])
 @commands.check(is_botchannel)
@@ -627,7 +650,7 @@ async def cirno(ctx):
 @commands.check(is_botchannel)
 @commands.is_nsfw()
 async def cirno_nofilter(ctx):
-	await sauces.char_nofilter(ctx, 'cirno')
+	await sauces.char(ctx, 'cirno', nsfw=True)
 
 @bot.command()
 @commands.check(is_botchannel)
@@ -638,7 +661,7 @@ async def satori(ctx):
 @commands.check(is_botchannel)
 @commands.is_nsfw()
 async def cirno_nofilter(ctx):
-	await sauces.char_nofilter(ctx, 'komeiji_satori')
+	await sauces.char(ctx, 'komeiji_satori', nsfw=True)
 
 @bot.command(name='char')
 @commands.check(is_botchannel)
@@ -649,7 +672,7 @@ async def char(ctx, *, tag):
 @commands.check(is_botchannel)
 @commands.is_nsfw()
 async def char_nofilter(ctx, tag):
-	await sauces.char_nofilter(ctx, tag)
+	await sauces.char(ctx, tag, nsfw=True)
 
 ########
 #Owner utils
