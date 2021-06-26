@@ -59,6 +59,13 @@ class LevelsTable:
         await cursor.execute(
             "insert into levels(guild_id, member_id, level, exp) values (?, ?, ?, ?)", (guild_id, member_id, level, exp))
 
+    async def contains_member(self, guild_id: int, member_id: int) -> bool:
+        async with self.connection.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+        await cursor.execute("select count(*) from levels where guild_id=? and member_id=?", (guild_id, member_id))
+        count, = await cursor.fetchone()
+        return bool(count)
+
     async def add_exp(self, guild_id: int, member_id: int, exp: int) -> tuple[int, int]:
         """
         It creates the member if it doesnt exists
@@ -66,7 +73,7 @@ class LevelsTable:
         """
         async with self.connection.cursor() as cursor:
             cursor: aiosqlite.Cursor
-            cursor.execute(
+            await cursor.execute(
                 "select level, exp from levels where guild_id=? and member_id=?", (guild_id, member_id))
             try:
                 old_level, old_exp = await cursor.fetchone()
@@ -139,7 +146,7 @@ class _ChannelsTable:
             sql = f"delete from {self.__name}(channel) where channel=?"
             await cursor.execute(sql, (channel_id,))
 
-    async def contains_channel(self, channel_id: int)->bool:
+    async def contains_channel(self, channel_id: int) -> bool:
         async with self.connection.cursor() as cursor:
             cursor: aiosqlite.Cursor
             sql = f"select count(*) from {self.__name}(channel) where channel=?"
