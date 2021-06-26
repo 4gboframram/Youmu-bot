@@ -139,6 +139,14 @@ class _ChannelsTable:
             sql = f"delete from {self.__name}(channel) where channel=?"
             await cursor.execute(sql, (channel_id,))
 
+    async def contains_channel(self, channel_id: int)->bool:
+        async with self.connection.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            sql = f"select count(*) from {self.__name}(channel) where channel=?"
+            await cursor.execute(sql, (channel_id,))
+            count, = await cursor.fetchone()
+            return bool(count)
+
     async def __aiter__(self):
         """
         Iterate over all the channels in the table asynchronously
