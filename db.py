@@ -186,6 +186,13 @@ class PrefixTable:
     def connection(self):
         return self.__connection
 
+    async def contains_prefix(self, guild_id:int,prefix:str)->bool:
+        async with self.connection.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("select count(*) from prefixes where guild_id=? and prefix=?)", (guild_id, prefix))
+            count, = await cursor.fetchone()
+            return bool(count)
+        
     async def add_prefix(self, guild_id: int, prefix: str) -> None:
         async with self.connection.cursor() as cursor:
             cursor: aiosqlite.Cursor
