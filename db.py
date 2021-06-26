@@ -24,7 +24,7 @@ class classproperty:
         cls = type(obj)
         return self.__fset.__get__(obj, cls)(value)
 
-    def setter(self, func: typing.Callable) -> classproperty:
+    def setter(self, func: typing.Callable):
         if not isinstance(func, (classmethod, staticmethod)):
             func = classmethod(func)
         self.__fget = func
@@ -46,7 +46,8 @@ class LevelsTable:
         return cls.update_value * (current_level * current_level + 5)
 
     @classproperty
-    def update_value(cls):
+    @staticmethod
+    def update_value():
         return 10
 
     async def add_member(self, guild_id: int, member_id: int) -> None:
@@ -54,7 +55,7 @@ class LevelsTable:
             cursor: aiosqlite.Cursor
             await self.__add_member(cursor, guild_id, member_id)
 
-    async def __add_member(self, cursor: aiosqlite.Cursor, guild_id: int, member_id: int, level: typing.Optional[int] = None, exp=typing.Optional[int]=None) -> None:
+    async def __add_member(self, cursor: aiosqlite.Cursor, guild_id: int, member_id: int, level: typing.Optional[int] = None, exp: typing.Optional[int] = None) -> None:
         await cursor.execute(
             "insert into levels(guild_id, member_id, level, exp) values (?, ?, ?, ?)", (guild_id, member_id, level, exp))
 
@@ -94,7 +95,7 @@ class LevelsTable:
     async def __get_member_stats(self, cursor: aiosqlite.Cursor, guild_id: int, member_id: int) -> Stats:
         await cursor.execute("select guild_id, member_id, level, exp from levels where guild_id=? and member_id=?", (guild_id, member_id))
         row = await cursor.fetchone()
-        return Stats(*row)
+        return self.__class__.Stats(*row)
 
     async def get_member_stats(self, guild_id: int, member_id: int) -> Stats:
         async with self.connection.cursor() as cursor:
@@ -107,11 +108,13 @@ class LevelsTable:
             stats = self.__get_member_stats(cursor, guild_id, member_id)
             await cursor.execute("select count(distinct level) as rank from levels where level < ?", (stats.level,))
             rank, = await cursor.fetchone()
+            return rank
 
 # I would do something like the following in C++
 # template<static_string Name> class ChannelTable
 # In python the equivalent would be a metaclass or a class decorator
 # but to keep things simple we will just use a base class
+
 
 class _ChannelsTable:
     __slots__ = "__connection", "__name"
@@ -124,18 +127,18 @@ class _ChannelsTable:
     def connection(self):
         return self.__connection
 
-    def add_channel(self, channel_id: int) -> None:
+    async def add_channel(self, channel_id: int) -> None:
         async with self.connection.cursor() as cursor:
             cursor: aiosqlite.Cursor
             sql = f"insert into {self.__name}(channel) values (?)"
             await cursor.execute(sql, (channel_id,))
-    
-    def remove_channel(self, channel_id: int) -> None:
+
+    async def remove_channel(self, channel_id: int) -> None:
         async with self.connection.cursor() as cursor:
             cursor: aiosqlite.Cursor
             sql = f"delete from {self.__name}(channel) where channel=?"
             await cursor.execute(sql, (channel_id,))
-    
+
     async def __aiter__(self):
         """
         Iterate over all the channels in the table asynchronously
@@ -146,6 +149,7 @@ class _ChannelsTable:
             await cursor.execute(sql)
             async for row in cursor:
                 yield row[0]
+
 
 class BotChannelsTable(_ChannelsTable):
     def __init__(self, connection: aiosqlite.Connection):
@@ -184,4 +188,6 @@ class PrefixTable:
             result = await cursor.fetchall()
             return [prefix[0] for prefix in result]
 
-__all__ = ["PrefixTable", "ExpChannelsTable", "BotChannelsTable", "LevelsTable"]
+
+__all__ = ["PrefixTable", "ExpChannelsTable",
+           "BotChannelsTable", "LevelsTable"]
