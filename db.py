@@ -77,7 +77,7 @@ class LevelsTable:
                 "select level, exp from levels where guild_id=? and member_id=?", (guild_id, member_id))
             try:
                 old_level, old_exp = await cursor.fetchone()
-            except TypeError:
+            except ValueError:
                 old_level = 1
                 old_exp = 0
                 await self.__add_member(cursor, guild_id, member_id)
