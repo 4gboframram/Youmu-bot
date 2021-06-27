@@ -468,12 +468,10 @@ async def prefixes(ctx):
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def addprefix(ctx, prefix):
-	if not prefix in prefix_db.get_prefixes(ctx.guild.id):
-		prefix_db.add_prefix(ctx.guild.id, prefix)
-		embed=YoumuEmbed(title=f"Prefix Add!", description=f"Added '{prefix}' to the list of prefixes", colour=0xadf0ff)	
-		await ctx.send(embed=embed)
-		return
-	embed=YoumuEmbed(title=f"Prefix Error", description=f"That prefix is already a supported prefix!", colour=0xff0000)	
+	if await prefix_tbl.add_prefix(ctx.guild.id, prefix):
+		embed = YoumuEmbed(title=f"Prefix Add!", description=f"Added '{prefix}' to the list of prefixes", colour=0xadf0ff)	
+	else:
+		embed=YoumuEmbed(title=f"Prefix Error", description=f"That prefix is already a supported prefix!", colour=0xff0000)	
 	await ctx.send(embed=embed)
 
 @bot.command()
