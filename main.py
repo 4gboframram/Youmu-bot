@@ -223,16 +223,23 @@ async def cut(ctx, *, args):
 	coroutines=[result.run(ctx) for result in results]
 	await asyncio.gather(*coroutines)
 
+import hashlib
+def new_rate(thing: str, upper: int)->int:
+	digest=hashlib.md5(thing.encode("utf8")).digest()
+	gen=Random(digest)
+	return gen.randint(0, upper)
+
 @bot.command()
 async def rate(ctx, *, thing):
-	h=hash(thing)%11
+
+	h=new_rate(thing, 10)
 	embed=YoumuEmbed(title='Rate',description=f"I would rate *{thing}* a {h} out of 10", colour=0xcc00ff)
 	await ctx.send(embed=embed)
 
 @bot.command()
 @commands.check(is_botchannel)
 async def percent(ctx, *, thing):
-	h=hash(str(ctx.author.id)+f' {thing}')%101
+	h=new_rate(str(ctx.author.id)+thing, 100)
 	embed=YoumuEmbed(title='Rate',description=f"{ctx.author.mention}, you are {h}% {thing}",colour=0xcc00ff)
 
 	await ctx.send(embed=embed)
@@ -335,7 +342,7 @@ async def _help(ctx):
 @slash.slash(name="rate", description='What would I rate [thing] out of 10?', guild_ids=guild_ids)
 @commands.check(is_botchannel)
 async def _rate(ctx, *, thing):
-	h=hash(thing)%11
+	h=new_rate(thing, 10)
 	embed=YoumuEmbed(title='Rate',description=f"I would rate *{thing}* a {h} out of 10",colour=0xcc00ff)
 	await ctx.send(embed=embed)
 
