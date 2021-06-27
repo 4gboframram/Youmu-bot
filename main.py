@@ -62,13 +62,12 @@ spamlogger_is_clearing=False
 last_presence=None
 
 
+async def is_botchannel(ctx):
+	return await bot_channel_tbl.contains_channel(ctx.channel.id)
+
 ############
-#on_ready and background tasks
+# on_ready and background tasks
 ############
-def is_botchannel(ctx):
-	if ctx.channel.id in bot_channel_db.get_iterable():
-		return False
-	return True
 
 @bot.event
 async def on_ready():
