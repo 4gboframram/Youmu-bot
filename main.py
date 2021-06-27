@@ -682,7 +682,7 @@ async def char_nofilter(ctx, tag):
 	await sauces.char(ctx, tag, nsfw=True)
 
 ########
-#Owner utils
+#Owner utils. Should not be abused. I just needed it for something
 #######
 @bot.command()
 @commands.is_owner()
