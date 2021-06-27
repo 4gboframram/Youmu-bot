@@ -443,29 +443,16 @@ async def removebotchannel(ctx):
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def allbotchannel(ctx):
-	for channel in ctx.guild.text_channels:
-		try:
-			bot_channel_db.remove_channel(str(channel.id))
-		except: continue
-
-	embed=YoumuEmbed(title=f"Bot Channel", description=f"All channels are now bot channels", colour=0xadf0ff)		
+	await bot_channel_tbl.add_multiple_channels(channel.id for channel in ctx.guild.text_channels)
+	embed = YoumuEmbed(title=f"Bot Channel", description=f"All channels are now bot channels", colour=0xadf0ff)		
 	await ctx.send(embed=embed)
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def removeallbotchannels(ctx):
-	try:
-		for channel in ctx.guild.text_channels:
-			try:
-				bot_channel_db.add_channel(str(channel.id))
-			except sqlite3.IntegrityError: continue 
-
-		embed=YoumuEmbed(title=f"Bot Channel", description=f"All bot channels have been removed", colour=0xadf0ff)	
-		await ctx.send(embed=embed)
-
-	except ValueError: 
-		embed=YoumuEmbed(title=f"Bot Channel Error", description=f"Something went wrong removing all bot channels?", colour=0xff0000)	
-		await ctx.send(embed=embed)
+	await bot_channel_tbl.remove_multiple_channels(channel.id for channel in ctx.guild.text_channels)
+	embed = YoumuEmbed(title=f"Bot Channel", description=f"All bot channels have been removed", colour=0xadf0ff)	
+	await ctx.send(embed=embed)
 
 #########
 #Prefix
