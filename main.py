@@ -379,19 +379,16 @@ async def rank(ctx):
 
 
 ##########
-#xp control commands
+# xp control commands
 ##########
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def addxpchannel(ctx):
-	if ctx.channel.id in xp_channel_db.get_iterable():
-		xp_channel_db.remove_channel(str(ctx.channel.id))
-		embed=YoumuEmbed(title=f"Xp Channel", description=f"Channel {ctx.channel.mention} is now an xp channel.", colour=0xadf0ff)	
-	
+	if await xp_channel_tbl.remove_channel(ctx.channel.id):
+		embed = YoumuEmbed(title=f"Xp Channel", description=f"Channel {ctx.channel.mention} is now an xp channel.", colour=0xadf0ff)	
 		await ctx.send(embed=embed)
-
 	else: 
-		embed=YoumuEmbed(title=f"Error", description=f"Channel {ctx.channel.mention} is already an xp channel, baka", colour=0xff0000)	
+		embed = YoumuEmbed(title=f"Error", description=f"Channel {ctx.channel.mention} is already an xp channel, baka.", colour=0xff0000)	
 		await ctx.send(embed=embed)
 
 @bot.command()
