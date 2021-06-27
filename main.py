@@ -45,9 +45,10 @@ xp_channel_tbl: db.ExpChannelsTable = None
 prefix_tbl: db.PrefixTable = None
 
 async def get_prefix(bot, message):
-	return commands.when_mentioned_or(*prefix_db.get_prefixes(message.guild.id))(bot, message)
+	guild_prefixes = await prefix_tbl.get_prefixes(message.guild.id)
+	return commands.when_mentioned_or(*guild_prefixes)(bot, message)
 
-bot = commands.Bot(command_prefix=get_prefix,help_command=None)
+bot = commands.Bot(command_prefix=get_prefix, help_command=None)
 slash = SlashCommand(bot, sync_commands=False) #remember to change back to true
 spamlogger={}
 comp=DiscordComponents(bot)
