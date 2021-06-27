@@ -10,7 +10,7 @@ import asyncio
 from random import choice, randint
 import requests
 import actions
-import db
+from db import LevelDB, BotChannelDB, PrefixDB
 from requests.exceptions import RequestException
 import sqlite3
 import tictactoe
@@ -26,7 +26,6 @@ from discord_slash import SlashCommand, SlashContext
 from discord_components import DiscordComponents, Button, ButtonStyle
 import argparse
 import pathlib
-import aiosqlite
 
 TOKEN = os.getenv('TOKEN')
 
@@ -40,16 +39,15 @@ tcp_group = listen_group.add_argument_group("--tcp")
 listen_group.add_argument("--tcp", nargs=2, type=str, metavar=("address", "port"), help="Create a status web server listening in a tcp socket")
 args = parser.parse_args()
 
-levels_tbl: db.LevelsTable = None
-bot_channel_tbl: db.BotChannelsTable = None
-xp_channel_tbl: db.ExpChannelsTable = None
-prefix_tbl: db.PrefixTable = None
+db=LevelDB('Levels')
+bot_channel_db=BotChannelDB('botchannels')
+xp_channel_db=BotChannelDB('xpchannels')
+prefix_db=PrefixDB('prefixes')
 
 async def get_prefix(bot, message):
-	guild_prefixes = await prefix_tbl.get_prefixes(message.guild.id)
-	return commands.when_mentioned_or(*guild_prefixes)(bot, message)
+	return commands.when_mentioned_or(*prefix_db.get_prefixes(message.guild.id))(bot, message)
 
-bot = commands.Bot(command_prefix=get_prefix, help_command=None)
+bot = commands.Bot(command_prefix=get_prefix,help_command=None)
 slash = SlashCommand(bot, sync_commands=False) #remember to change back to true
 spamlogger={}
 comp=DiscordComponents(bot)
@@ -63,12 +61,13 @@ spamlogger_is_clearing=False
 last_presence=None
 
 
-async def is_botchannel(ctx):
-	return await bot_channel_tbl.contains_channel(ctx.channel.id)
-
 ############
-# on_ready and background tasks
+#on_ready and background tasks
 ############
+def is_botchannel(ctx):
+	if ctx.channel.id in bot_channel_db.get_iterable():
+		return False
+	return True
 
 @bot.event
 async def on_ready():
@@ -114,18 +113,20 @@ async def on_message(message):
 	if isinstance(message.channel, 	discord.channel.DMChannel):
 		return
 
-	guild_id = message.guild.id
-	member_id = message.author.id
+	global db
+	guild_id=message.guild.id
+	member_id=message.author.id
 
-	if await xp_channel_tbl.contains_channel(message.channel.id):
-		try:
-			spamlogger[member_id] += 1
+	if not message.channel.id in xp_channel_db.get_iterable():
+		try: spamlogger[member_id]+=1
 		except KeyError: 
-			spamlogger[member_id] = 1
-
-		old_level, new_level = await levels_tbl.add_exp(guild_id, member_id, 2 * 1 / (spamlogger[member_id] + 1))
-		if old_level != new_level:
-			await on_level_up(message)
+			spamlogger[member_id]=1
+		try: await db.add_xp(guild_id, member_id, 2*1/(spamlogger[member_id]+1), on_level_up, message)
+		except: 
+			if not 'g'+str(guild_id) in db.list_of_tables():
+				db.add_guild(guild_id)
+			db.add_member(guild_id, member_id)
+			await db.add_xp(guild_id, member_id, 2*1/(spamlogger[member_id]+1), on_level_up, message)
 	
 async def clear_spamlogger():
 	global spamlogger_is_clearing
@@ -137,63 +138,64 @@ async def clear_spamlogger():
 			await asyncio.sleep(60)
 
 async def on_level_up(message):
-	stats = await levels_tbl.get_member_stats(message.guild.id, message.author.id)
-	embed = YoumuEmbed(title='Level Up!',description=f"{message.author.mention}, you have leveled up to level {stats.level}!", color=0x53cc74)
+	embed=YoumuEmbed(title='Level Up!',description=f"{message.author.mention}, you have leveled up to level {db.get_member_stats(message.guild.id, message.author.id)[1]}!", color=0x53cc74)
 	try:
-		m = await message.channel.send(embed=embed, components=[Button(style=ButtonStyle.red, label="Close", emoji=bot.get_emoji(844701344719962132)),])
-	except Exception: 
-		m = await message.channel.send(embed=embed, components=[Button(style=ButtonStyle.red, label="Close", emoji='⚔️'),],)
+		m=await message.channel.send(embed=embed,components=[Button(style=ButtonStyle.red, label="Close", emoji=bot.get_emoji(844701344719962132)),])
+	except: 
+		m=await message.channel.send(embed=embed,components=[Button(style=ButtonStyle.red, label="Close", emoji='⚔️'),],)
 
 	def check(res):
 		return message.author == res.user and res.channel == message.channel 
 
 	try:
 		res = await bot.wait_for("button_click", check=check, timeout=60)
-		if res.component.label == 'Close':
+		if res.component.label=='Close':
 			await m.delete()
 	except asyncio.TimeoutError:
 		await m.edit(components=[Button(style=ButtonStyle.red, label="Close", emoji=bot.get_emoji(844701344719962132), disabled=True),]) 
+		pass
 
 @bot.event
 async def on_guild_channel_create(channel):
 	print('updating muted role channel perms...')
-	guild = channel.guild
+	guild=channel.guild
 	role = discord.utils.get(guild.roles, name="Speaking Cut")
 	if not role:
 			print('creating role...')
-			role = await guild.create_role(name="Speaking Cut")
+			role=await guild.create_role(name="Speaking Cut")
 			permissions = discord.Permissions()
 			permissions.update(send_messages = False)
 
 			await role.edit(reason = None, colour = discord.Colour.black(), permissions=permissions)
 			print('Changing perms')
 			for channel in guild.channels:
+				
 				await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
-	else:
-		await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
+	else: await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
 	print('success!')
 
-	await bot_channel_tbl.add_channel(channel.id)
-	await xp_channel_tbl.add_channel(channel.id)
+	bot_channel_db.add_channel(str(channel.id))
+	xp_channel_db.add_channel(str(channel.id))
 
 @bot.event
 async def on_guild_join(guild):
 	global guild_ids
 	guild_ids.append(guild.id)
-	prefix_tbl.add_prefix(guild.id, ";")
+	prefix_db.add_guild(guild.id)
+	prefix_db.add_prefix(guild.id, ';')
 	role = discord.utils.get(guild.roles, name="Speaking Cut")
 	if not role:
-		print('creating role...')
-		role = await guild.create_role(name="Speaking Cut")
-		permissions = discord.Permissions()
-		permissions.update(send_messages = False)
+			print('creating role...')
+			role=await guild.create_role(name="Speaking Cut")
+			permissions = discord.Permissions()
+			permissions.update(send_messages = False)
 
-		await role.edit(reason = None, colour = discord.Colour.black(), permissions=permissions)
-		print('Changing perms')
-		for channel in guild.channels:
-			await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
-	else:
-		await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
+			await role.edit(reason = None, colour = discord.Colour.black(), permissions=permissions)
+			print('Changing perms')
+			for channel in guild.channels:
+				
+				await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
+	else: await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
 	print('success!')
 
 @bot.event
@@ -217,8 +219,7 @@ async def cut(ctx, *, args):
 		if isinstance(e, CommandSyntaxError) or isinstance(e, CommandUnexpectedEOF):
 			await ctx.send(e.message)
 			return
-		else:
-			raise e
+		else: raise e
 	coroutines=[result.run(ctx) for result in results]
 	await asyncio.gather(*coroutines)
 
@@ -367,133 +368,168 @@ async def _inspire(ctx):
 		await ctx.send('Inspirobot is broken, there is no reason to live.')
 
 ##################
-# Leveling Commands
+#Leveling Commands
 #################
 
 @bot.command()
 @commands.check(is_botchannel)
 async def xp(ctx):
-	stats = await levels_tbl.get_member_stats(ctx.guild.id, ctx.author.id)
-	needed = db.LevelsTable.needed_exp_to_levelup(stats.level + 1) - stats.exp
-	embed = YoumuEmbed(title='Xp?', description=f"{ctx.author.mention}, you are level {stats.level}, and {needed} xp from leveling up.", color=0x53cc74)
+	stats=db.get_member_stats(ctx.guild.id, ctx.author.id)
+	embed=YoumuEmbed(title='Xp?',description=f"{ctx.author.mention}, you have leveled are level {stats[1]}, and {db.rule(stats[1]+1)-stats[2]} xp from leveling up to {stats[1]+1}", color=0x53cc74)
 	await ctx.send(embed=embed)
 
 @bot.command()
 @commands.check(is_botchannel)
 async def rank(ctx):
-	rank = await levels_tbl.get_member_rank(ctx.guild.id, ctx.author.id)
-	embed = YoumuEmbed(title='Rank?', description=f"{ctx.author.mention}, you are rank {rank} in the server!", color=0x53cc74)
+	embed=YoumuEmbed(title='Rank?',description=f"{ctx.author.mention}, you are rank {db.get_member_rank(ctx.guild.id, ctx.author.id)} in the server!", color=0x53cc74)
 	await ctx.send(embed=embed)
 
 
 
 ##########
-# xp control commands
+#xp control commands
 ##########
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def addxpchannel(ctx):
-	if await xp_channel_tbl.add_channel(ctx.channel.id):
-		embed = YoumuEmbed(title=f"Xp Channel", description=f"Channel {ctx.channel.mention} is now an xp channel.", colour=0xadf0ff)	
+	if ctx.channel.id in xp_channel_db.get_iterable():
+		xp_channel_db.remove_channel(str(ctx.channel.id))
+		embed=YoumuEmbed(title=f"Xp Channel", description=f"Channel {ctx.channel.mention} is now an xp channel.", colour=0xadf0ff)	
+	
 		await ctx.send(embed=embed)
+
 	else: 
-		embed = YoumuEmbed(title=f"Error", description=f"Channel {ctx.channel.mention} is already an xp channel, baka.", colour=0xff0000)	
+		embed=YoumuEmbed(title=f"Error", description=f"Channel {ctx.channel.mention} is already an xp channel, baka", colour=0xff0000)	
 		await ctx.send(embed=embed)
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def removexpchannel(ctx):
-	if await xp_channel_tbl.remove_channel(ctx.channel.id):
-		embed = YoumuEmbed(title=f"Xp Channel", description=f"Channel {ctx.channel.mention} is no longer an xp channel.", colour=0xadf0ff)	
+	if ctx.channel.id not in xp_channel_db.get_iterable():
+		xp_channel_db.add_channel(str(ctx.channel.id))
+		embed=YoumuEmbed(title=f"Xp Channel", description=f"Channel {ctx.channel.mention} is no longer an xp channel.", colour=0xadf0ff)	
 		await ctx.send(embed=embed)
+
 	else:
-		embed = YoumuEmbed(title=f"Xp Channel Error", description=f"Could not remove this channel from the list of xp channels because it is not a xp channel to begin with, baka.", colour=0xff0000)	
+		embed=YoumuEmbed(title=f"Xp Channel Error", description=f"Could not remove this channel from the list of xp channels because it is not a xp channel to begin with, baka.", colour=0xff0000)	
 		await ctx.send(embed=embed)
 	
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def allxpchannel(ctx):
-	await xp_channel_tbl.add_multiple_channels(channel.id for channel in ctx.guild.text_channels)
-	embed = YoumuEmbed(title=f"Xp Channel", description=f"All channels are now xp channels", colour=0xadf0ff)		
+	
+	for channel in ctx.guild.text_channels:
+		try:
+			xp_channel_db.remove_channel(str(channel.id))
+		except: continue
+
+	embed=YoumuEmbed(title=f"Xp Channel", description=f"All channels are now xp channels", colour=0xadf0ff)		
 	await ctx.send(embed=embed)
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def removeallxpchannels(ctx):
-	await xp_channel_tbl.remove_multiple_channels(channel.id for channel in ctx.guild.text_channels)
-	embed = YoumuEmbed(title=f"Xp Channel", description=f"All xp channels have been removed", colour=0xadf0ff)	
-	await ctx.send(embed=embed)
+	try:
+		for channel in ctx.guild.text_channels:
+			try:
+				xp_channel_db.add_channel(str(channel.id))
+			except sqlite3.IntegrityError: continue 
+
+		embed=YoumuEmbed(title=f"Xp Channel", description=f"All xp channels have been removed", colour=0xadf0ff)	
+	
+		await ctx.send(embed=embed)
+	except: 
+		embed=YoumuEmbed(title=f"Xp Channel Error", description=f"Something went wrong removing all xp channels?", colour=0xff0000)	
+	
+		await ctx.send(embed=embed)
 
 
 #####################
-# Bot Channel Commands
+#Bot Channel Commands
 #####################
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def addbotchannel(ctx):
-	if await bot_channel_tbl.add_channel(ctx.channel.id):
-		embed = YoumuEmbed(title=f"Bot Channel", description=f"Channel {ctx.channel.mention} is now a bot channel. If you had no bot channels before, then this is the only channel where this bot's commands can be used", colour=0xadf0ff)	
+	if ctx.channel.id in bot_channel_db.get_iterable():
+		bot_channel_db.remove_channel(str(ctx.channel.id))
+		embed=YoumuEmbed(title=f"Bot Channel", description=f"Channel {ctx.channel.mention} is now a bot channel. If you had no bot channels before, then this is the only channel where this bot's commands can be used", colour=0xadf0ff)	
 		await ctx.send(embed=embed)
+
 	else: 
-		embed = YoumuEmbed(title=f"Error", description=f"Channel {ctx.channel.mention} is already a bot channel, baka", colour=0xff0000)	
+		embed=YoumuEmbed(title=f"Error", description=f"Channel {ctx.channel.mention} is already a bot channel, baka", colour=0xff0000)	
 		await ctx.send(embed=embed)
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def removebotchannel(ctx):
-	if await bot_channel_tbl.remove_channel(ctx.channel.id):
-		embed = YoumuEmbed(title=f"Xp Channel", description=f"Channel {ctx.channel.mention} is no longer an xp channel.", colour=0xadf0ff)	
+	if ctx.channel.id not in bot_channel_db.get_iterable():
+		bot_channel_db.add_channel(str(ctx.channel.id))
+		embed=YoumuEmbed(title=f"Xp Channel", description=f"Channel {ctx.channel.mention} is no longer an xp channel.", colour=0xadf0ff)	
 		await ctx.send(embed=embed)
+
 	else:
-		embed = YoumuEmbed(title=f"Xp Channel Error", description=f"Could not remove this channel from the list of xp channels because it is not a xp channel to begin with, baka.", colour=0xff0000)	
+		embed=YoumuEmbed(title=f"Xp Channel Error", description=f"Could not remove this channel from the list of xp channels because it is not a xp channel to begin with, baka.", colour=0xff0000)	
 		await ctx.send(embed=embed)
 	
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def allbotchannel(ctx):
-	await bot_channel_tbl.add_multiple_channels(channel.id for channel in ctx.guild.text_channels)
-	embed = YoumuEmbed(title=f"Bot Channel", description=f"All channels are now bot channels", colour=0xadf0ff)		
+	for channel in ctx.guild.text_channels:
+		try:
+			bot_channel_db.remove_channel(str(channel.id))
+		except: continue
+
+	embed=YoumuEmbed(title=f"Bot Channel", description=f"All channels are now bot channels", colour=0xadf0ff)		
 	await ctx.send(embed=embed)
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def removeallbotchannels(ctx):
-	await bot_channel_tbl.remove_multiple_channels(channel.id for channel in ctx.guild.text_channels)
-	embed = YoumuEmbed(title=f"Bot Channel", description=f"All bot channels have been removed", colour=0xadf0ff)	
-	await ctx.send(embed=embed)
+	try:
+		for channel in ctx.guild.text_channels:
+			try:
+				bot_channel_db.add_channel(str(channel.id))
+			except sqlite3.IntegrityError: continue 
+
+		embed=YoumuEmbed(title=f"Bot Channel", description=f"All bot channels have been removed", colour=0xadf0ff)	
+		await ctx.send(embed=embed)
+
+	except ValueError: 
+		embed=YoumuEmbed(title=f"Bot Channel Error", description=f"Something went wrong removing all bot channels?", colour=0xff0000)	
+		await ctx.send(embed=embed)
 
 #########
-# Prefix
+#Prefix
 #########
 @bot.command()
 async def prefixes(ctx):
-	prefix = await prefix_tbl.get_prefixes(ctx.guild.id)
-	prefix_str = '\n'.join(prefix)
+	prefix=prefix_db.get_prefixes(ctx.guild.id)
+	prefix_str='\n'.join(prefix)
 	print(prefix_str)
-	embed = YoumuEmbed(title='Prefixes', description=f'Prefixes: \n**{prefix_str}**', color=0x53cc74)
+	embed=YoumuEmbed(title='Prefixes', description=f'Prefixes: \n**{prefix_str}**', color=0x53cc74)
 	await ctx.send(embed=embed)
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def addprefix(ctx, prefix):
-	if await prefix_tbl.add_prefix(ctx.guild.id, prefix):
-		embed = YoumuEmbed(title=f"Prefix Add!", description=f"Added '{prefix}' to the list of prefixes", colour=0xadf0ff)	
-	else:
-		embed=YoumuEmbed(title=f"Prefix Error", description=f"That prefix is already a supported prefix!", colour=0xff0000)	
+	if not prefix in prefix_db.get_prefixes(ctx.guild.id):
+		prefix_db.add_prefix(ctx.guild.id, prefix)
+		embed=YoumuEmbed(title=f"Prefix Add!", description=f"Added '{prefix}' to the list of prefixes", colour=0xadf0ff)	
+		await ctx.send(embed=embed)
+		return
+	embed=YoumuEmbed(title=f"Prefix Error", description=f"That prefix is already a supported prefix!", colour=0xff0000)	
 	await ctx.send(embed=embed)
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def removeprefix(ctx, prefix):
-	if await prefixes_tbl.remove_prefix(ctx.guild.id, prefix):
-		embed = YoumuEmbed(title=f"Prefix Removed!", description=f"Removed '{prefix}' from the list of prefixes", colour=0xadf0ff)	
-	else:
-		embed = YoumuEmbed(title=f"Prefix Error", description=f"Could not remove the prefix '{prefix}' because it is not a prefix to begin with, baka.", colour=0xff0000)	
-	await ctx.send(embed=embed)
 
+	prefix_db.remove_prefix(ctx.guild.id, prefix)
+	embed=YoumuEmbed(title=f"Prefix Removed!", description=f"Removed '{prefix}' from the list of prefixes", colour=0xadf0ff)	
+	await ctx.send(embed=embed)
 ################
-# Sauce
+#Sauce
 ##############
 
 @bot.command(name='gelbooru', aliases=['gb'])
@@ -666,14 +702,5 @@ async def owner(ctx, guild_id: int, *, message):
 
 	await ctx.author.send(invite.url)
 
-async def setup():
-	global levels_tbl, bot_channel_tbl, xp_channel_tbl, prefixes_tbl
-	conn = await aiosqlite.connect("databases/youmu.db")
-	levels_tbl = db.LevelsTable(conn)
-	bot_channel_tbl = db.BotChannelsTable(conn)
-	xp_channel_tbl = db.ExpChannelsTable(conn)
-	prefixes_tbl = db.PrefixTable(conn)
 
-if __name__ == "__main__":
-	asyncio.get_event_loop().run_until_complete(setup())
-	bot.run(TOKEN)
+bot.run(TOKEN)

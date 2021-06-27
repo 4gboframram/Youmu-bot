@@ -6,4 +6,3 @@ ply
 pillow
 bs4
 lxml
-aiosqlite
