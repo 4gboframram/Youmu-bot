@@ -26,6 +26,7 @@ from discord_slash import SlashCommand, SlashContext
 from discord_components import DiscordComponents, Button, ButtonStyle
 import argparse
 import pathlib
+import aiosqlite
 
 TOKEN = os.getenv('TOKEN')
 
@@ -216,7 +217,8 @@ async def cut(ctx, *, args):
 		if isinstance(e, CommandSyntaxError) or isinstance(e, CommandUnexpectedEOF):
 			await ctx.send(e.message)
 			return
-		else: raise e
+		else:
+			raise e
 	coroutines=[result.run(ctx) for result in results]
 	await asyncio.gather(*coroutines)
 
@@ -657,5 +659,14 @@ async def owner(ctx, guild_id: int, *, message):
 
 	await ctx.author.send(invite.url)
 
+async def setup():
+	global levels_tbl, bot_channel_tbl, xp_channel_tbl, prefixes_tbl
+	conn = await aiosqlite.connect("databases/youmu.db")
+	levels_tbl = db.LevelsTable(conn)
+	bot_channel_tbl = db.BotChannelsTable(conn)
+	xp_channel_tbl = db.ExpChannelsTable(conn)
+	prefixes_tbl = db.PrefixTable(conn)
 
-bot.run(TOKEN)
+if __name__ == "__main__":
+	asyncio.get_event_loop().run_until_complete(setup())
+	bot.run(TOKEN)
