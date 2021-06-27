@@ -179,21 +179,20 @@ async def on_guild_channel_create(channel):
 async def on_guild_join(guild):
 	global guild_ids
 	guild_ids.append(guild.id)
-	prefix_db.add_guild(guild.id)
-	prefix_db.add_prefix(guild.id, ';')
+	prefix_tbl.add_prefix(guild.id, ";")
 	role = discord.utils.get(guild.roles, name="Speaking Cut")
 	if not role:
-			print('creating role...')
-			role=await guild.create_role(name="Speaking Cut")
-			permissions = discord.Permissions()
-			permissions.update(send_messages = False)
+		print('creating role...')
+		role = await guild.create_role(name="Speaking Cut")
+		permissions = discord.Permissions()
+		permissions.update(send_messages = False)
 
-			await role.edit(reason = None, colour = discord.Colour.black(), permissions=permissions)
-			print('Changing perms')
-			for channel in guild.channels:
-				
-				await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
-	else: await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
+		await role.edit(reason = None, colour = discord.Colour.black(), permissions=permissions)
+		print('Changing perms')
+		for channel in guild.channels:
+			await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
+	else:
+		await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
 	print('success!')
 
 @bot.event
