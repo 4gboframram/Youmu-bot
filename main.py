@@ -404,31 +404,16 @@ async def removexpchannel(ctx):
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def allxpchannel(ctx):
-	
-	for channel in ctx.guild.text_channels:
-		try:
-			xp_channel_db.remove_channel(str(channel.id))
-		except: continue
-
-	embed=YoumuEmbed(title=f"Xp Channel", description=f"All channels are now xp channels", colour=0xadf0ff)		
+	await xp_channel_tbl.add_multiple_channels(channel.id for channel in ctx.guild.text_channels)
+	embed = YoumuEmbed(title=f"Xp Channel", description=f"All channels are now xp channels", colour=0xadf0ff)		
 	await ctx.send(embed=embed)
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def removeallxpchannels(ctx):
-	try:
-		for channel in ctx.guild.text_channels:
-			try:
-				xp_channel_db.add_channel(str(channel.id))
-			except sqlite3.IntegrityError: continue 
-
-		embed=YoumuEmbed(title=f"Xp Channel", description=f"All xp channels have been removed", colour=0xadf0ff)	
-	
-		await ctx.send(embed=embed)
-	except: 
-		embed=YoumuEmbed(title=f"Xp Channel Error", description=f"Something went wrong removing all xp channels?", colour=0xff0000)	
-	
-		await ctx.send(embed=embed)
+	await xp_channel_tbl.remove_multiple_channels(channel.id for channel in ctx.guild.text_channels)
+	embed = YoumuEmbed(title=f"Xp Channel", description=f"All xp channels have been removed", colour=0xadf0ff)	
+	await ctx.send(embed=embed)
 
 
 #####################
