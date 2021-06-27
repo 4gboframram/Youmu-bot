@@ -113,20 +113,18 @@ async def on_message(message):
 	if isinstance(message.channel, 	discord.channel.DMChannel):
 		return
 
-	global db
-	guild_id=message.guild.id
-	member_id=message.author.id
+	guild_id = message.guild.id
+	member_id = message.author.id
 
-	if not message.channel.id in xp_channel_db.get_iterable():
-		try: spamlogger[member_id]+=1
+	if await xp_channel_tbl.contains_channel(message.channel.id):
+		try:
+			spamlogger[member_id] += 1
 		except KeyError: 
-			spamlogger[member_id]=1
-		try: await db.add_xp(guild_id, member_id, 2*1/(spamlogger[member_id]+1), on_level_up, message)
-		except: 
-			if not 'g'+str(guild_id) in db.list_of_tables():
-				db.add_guild(guild_id)
-			db.add_member(guild_id, member_id)
-			await db.add_xp(guild_id, member_id, 2*1/(spamlogger[member_id]+1), on_level_up, message)
+			spamlogger[member_id] = 1
+
+		old_level, new_level = await levels_tbl.add_exp(guild_id, member_id, 2 * 1 / (spamlogger[member_id] + 1))
+		if old_level != new_level:
+			await on_level_up(message)
 	
 async def clear_spamlogger():
 	global spamlogger_is_clearing
