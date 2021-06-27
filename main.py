@@ -384,7 +384,7 @@ async def rank(ctx):
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def addxpchannel(ctx):
-	if await xp_channel_tbl.remove_channel(ctx.channel.id):
+	if await xp_channel_tbl.add_channel(ctx.channel.id):
 		embed = YoumuEmbed(title=f"Xp Channel", description=f"Channel {ctx.channel.mention} is now an xp channel.", colour=0xadf0ff)	
 		await ctx.send(embed=embed)
 	else: 
@@ -394,13 +394,11 @@ async def addxpchannel(ctx):
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def removexpchannel(ctx):
-	if ctx.channel.id not in xp_channel_db.get_iterable():
-		xp_channel_db.add_channel(str(ctx.channel.id))
-		embed=YoumuEmbed(title=f"Xp Channel", description=f"Channel {ctx.channel.mention} is no longer an xp channel.", colour=0xadf0ff)	
+	if await xp_channel_tbl.remove_channel(ctx.channel.id):
+		embed = YoumuEmbed(title=f"Xp Channel", description=f"Channel {ctx.channel.mention} is no longer an xp channel.", colour=0xadf0ff)	
 		await ctx.send(embed=embed)
-
 	else:
-		embed=YoumuEmbed(title=f"Xp Channel Error", description=f"Could not remove this channel from the list of xp channels because it is not a xp channel to begin with, baka.", colour=0xff0000)	
+		embed = YoumuEmbed(title=f"Xp Channel Error", description=f"Could not remove this channel from the list of xp channels because it is not a xp channel to begin with, baka.", colour=0xff0000)	
 		await ctx.send(embed=embed)
 	
 @bot.command()
