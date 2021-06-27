@@ -140,11 +140,17 @@ class _ChannelsTable:
             sql = f"insert into {self.__name}(channel) values (?)"
             await cursor.execute(sql, (channel_id,))
 
-    async def remove_channel(self, channel_id: int) -> None:
+    async def remove_channel(self, channel_id: int) -> bool:
+        """
+        Tries to remove a channel
+        returns whatever the channel was deleted
+        """
         async with self.connection.cursor() as cursor:
             cursor: aiosqlite.Cursor
             sql = f"delete from {self.__name}(channel) where channel=?"
             await cursor.execute(sql, (channel_id,))
+            count, = await cursor.fetchone()
+            return bool(count)
 
     async def contains_channel(self, channel_id: int) -> bool:
         async with self.connection.cursor() as cursor:
