@@ -10,7 +10,7 @@ import asyncio
 from random import choice, randint
 import requests
 import actions
-from db import LevelDB, BotChannelDB, PrefixDB
+import db
 from requests.exceptions import RequestException
 import sqlite3
 import tictactoe
@@ -39,10 +39,10 @@ tcp_group = listen_group.add_argument_group("--tcp")
 listen_group.add_argument("--tcp", nargs=2, type=str, metavar=("address", "port"), help="Create a status web server listening in a tcp socket")
 args = parser.parse_args()
 
-db=LevelDB('Levels')
-bot_channel_db=BotChannelDB('botchannels')
-xp_channel_db=BotChannelDB('xpchannels')
-prefix_db=PrefixDB('prefixes')
+levels_tbl: db.LevelsTable = None
+bot_channel_tbl: db.BotChannelsTable = None
+xp_channel_tbl: db.ExpChannelsTable = None
+prefix_tbl: db.PrefixTable = None
 
 async def get_prefix(bot, message):
 	return commands.when_mentioned_or(*prefix_db.get_prefixes(message.guild.id))(bot, message)
