@@ -477,12 +477,14 @@ async def addprefix(ctx, prefix):
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def removeprefix(ctx, prefix):
-
-	prefix_db.remove_prefix(ctx.guild.id, prefix)
-	embed=YoumuEmbed(title=f"Prefix Removed!", description=f"Removed '{prefix}' from the list of prefixes", colour=0xadf0ff)	
+	if await prefixes_tbl.remove_prefix(ctx.guild.id, prefix):
+		embed = YoumuEmbed(title=f"Prefix Removed!", description=f"Removed '{prefix}' from the list of prefixes", colour=0xadf0ff)	
+	else:
+		embed = YoumuEmbed(title=f"Prefix Error", description=f"Could not remove the prefix '{prefix}' because it is not a prefix to begin with, baka.", colour=0xff0000)	
 	await ctx.send(embed=embed)
+
 ################
-#Sauce
+# Sauce
 ##############
 
 @bot.command(name='gelbooru', aliases=['gb'])
