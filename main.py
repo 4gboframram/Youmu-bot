@@ -417,19 +417,17 @@ async def removeallxpchannels(ctx):
 
 
 #####################
-#Bot Channel Commands
+# Bot Channel Commands
 #####################
 
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def addbotchannel(ctx):
-	if ctx.channel.id in bot_channel_db.get_iterable():
-		bot_channel_db.remove_channel(str(ctx.channel.id))
-		embed=YoumuEmbed(title=f"Bot Channel", description=f"Channel {ctx.channel.mention} is now a bot channel. If you had no bot channels before, then this is the only channel where this bot's commands can be used", colour=0xadf0ff)	
+	if await bot_channel_tbl.add_channel(ctx.channel.id):
+		embed = YoumuEmbed(title=f"Bot Channel", description=f"Channel {ctx.channel.mention} is now a bot channel. If you had no bot channels before, then this is the only channel where this bot's commands can be used", colour=0xadf0ff)	
 		await ctx.send(embed=embed)
-
 	else: 
-		embed=YoumuEmbed(title=f"Error", description=f"Channel {ctx.channel.mention} is already a bot channel, baka", colour=0xff0000)	
+		embed = YoumuEmbed(title=f"Error", description=f"Channel {ctx.channel.mention} is already a bot channel, baka", colour=0xff0000)	
 		await ctx.send(embed=embed)
 
 @bot.command()
