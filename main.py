@@ -364,8 +364,9 @@ async def _inspire(ctx):
 @bot.command()
 @commands.check(is_botchannel)
 async def xp(ctx):
-	stats=db.get_member_stats(ctx.guild.id, ctx.author.id)
-	embed=YoumuEmbed(title='Xp?',description=f"{ctx.author.mention}, you have leveled are level {stats[1]}, and {db.rule(stats[1]+1)-stats[2]} xp from leveling up to {stats[1]+1}", color=0x53cc74)
+	stats = await levels_tbl.get_member_stats(ctx.guild.id, ctx.author.id)
+	needed = db.LevelsTable.needed_exp_to_levelup(stats.level + 1) - stats.exp
+	embed = YoumuEmbed(title='Xp?', description=f"{ctx.author.mention}, you are level {stats.level}, and {needed} xp from leveling up.", color=0x53cc74)
 	await ctx.send(embed=embed)
 
 @bot.command()
