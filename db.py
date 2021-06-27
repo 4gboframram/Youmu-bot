@@ -156,6 +156,11 @@ class _ChannelsTable:
             results = await asyncio.gather(*tasks)
             return sum(results)
 
+    async def __remove_channel(self, cursor: aiosqlite.Cursor, channel_id: int) -> bool:
+        sql = f"delete from {self.__name}(channel) where channel=?"
+        await cursor.execute(sql, (channel_id,))
+        return bool(cursor.rowcount)
+
     async def remove_channel(self, channel_id: int) -> bool:
         """
         Tries to remove a channel
@@ -163,9 +168,15 @@ class _ChannelsTable:
         """
         async with self.connection.cursor() as cursor:
             cursor: aiosqlite.Cursor
-            sql = f"delete from {self.__name}(channel) where channel=?"
-            await cursor.execute(sql, (channel_id,))
-            return bool(cursor.rowcount)
+            return self.__remove_channel(cursor, channel_id)
+
+    async def remove_multiple_channels(self, channel_ids: typing.Iterable[int]) -> int:
+        async with self.connection.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            tasks = [self.__remove_channel(cursor, channel_id)
+                     for channel_id in channel_ids]
+            results = await asyncio.gather(*tasks)
+            return sum(results)
 
     async def contains_channel(self, channel_id: int) -> bool:
         async with self.connection.cursor() as cursor:
