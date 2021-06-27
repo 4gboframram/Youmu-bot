@@ -138,7 +138,11 @@ class _ChannelsTable:
         async with self.connection.cursor() as cursor:
             cursor: aiosqlite.Cursor
             sql = f"insert into {self.__name}(channel) values (?)"
-            await cursor.execute(sql, (channel_id,))
+            try:
+                await cursor.execute(sql, (channel_id,))
+                return True
+            except aiosqlite.IntegrityError:
+                return False
 
     async def remove_channel(self, channel_id: int) -> bool:
         """
