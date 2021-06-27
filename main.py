@@ -137,22 +137,22 @@ async def clear_spamlogger():
 			await asyncio.sleep(60)
 
 async def on_level_up(message):
-	embed=YoumuEmbed(title='Level Up!',description=f"{message.author.mention}, you have leveled up to level {db.get_member_stats(message.guild.id, message.author.id)[1]}!", color=0x53cc74)
+	stats = await levels_tbl.get_member_stats(message.guild.id, message.author.id)
+	embed = YoumuEmbed(title='Level Up!',description=f"{message.author.mention}, you have leveled up to level {stats.level}!", color=0x53cc74)
 	try:
-		m=await message.channel.send(embed=embed,components=[Button(style=ButtonStyle.red, label="Close", emoji=bot.get_emoji(844701344719962132)),])
-	except: 
-		m=await message.channel.send(embed=embed,components=[Button(style=ButtonStyle.red, label="Close", emoji='⚔️'),],)
+		m = await message.channel.send(embed=embed, components=[Button(style=ButtonStyle.red, label="Close", emoji=bot.get_emoji(844701344719962132)),])
+	except Exception: 
+		m = await message.channel.send(embed=embed, components=[Button(style=ButtonStyle.red, label="Close", emoji='⚔️'),],)
 
 	def check(res):
 		return message.author == res.user and res.channel == message.channel 
 
 	try:
 		res = await bot.wait_for("button_click", check=check, timeout=60)
-		if res.component.label=='Close':
+		if res.component.label == 'Close':
 			await m.delete()
 	except asyncio.TimeoutError:
 		await m.edit(components=[Button(style=ButtonStyle.red, label="Close", emoji=bot.get_emoji(844701344719962132), disabled=True),]) 
-		pass
 
 @bot.event
 async def on_guild_channel_create(channel):
