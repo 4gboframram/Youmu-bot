@@ -153,8 +153,7 @@ class _ChannelsTable:
             cursor: aiosqlite.Cursor
             sql = f"delete from {self.__name}(channel) where channel=?"
             await cursor.execute(sql, (channel_id,))
-            count, = await cursor.fetchone()
-            return bool(count)
+            return bool(cursor.rowcount)
 
     async def contains_channel(self, channel_id: int) -> bool:
         async with self.connection.cursor() as cursor:
