@@ -1,6 +1,7 @@
 import aiosqlite
 import typing
 import dataclasses
+import asyncio
 
 
 class classproperty:
@@ -134,15 +135,26 @@ class _ChannelsTable:
     def connection(self) -> aiosqlite.Connection:
         return self.__connection
 
-    async def add_channel(self, channel_id: int) -> None:
+    async def __add_channel(self, cursor: aiosqlite.Cursor, channel_id: int) -> bool:
+        sql = f"insert into {self.__name}(channel) values (?)"
+        try:
+            await cursor.execute(sql, (channel_id,))
+            return True
+        except aiosqlite.IntegrityError:
+            return False
+
+    async def add_channel(self, channel_id: int) -> bool:
         async with self.connection.cursor() as cursor:
             cursor: aiosqlite.Cursor
-            sql = f"insert into {self.__name}(channel) values (?)"
-            try:
-                await cursor.execute(sql, (channel_id,))
-                return True
-            except aiosqlite.IntegrityError:
-                return False
+            return self.__add_channel(cursor, channel_id)
+
+    async def add_multiple_channels(self, channel_ids: typing.Iterable[int]) -> int:
+        async with self.connection.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            tasks = [self.__add_channel(cursor, channel_id)
+                     for channel_id in channel_ids]
+            results = await asyncio.gather(*tasks)
+            return sum(results)
 
     async def remove_channel(self, channel_id: int) -> bool:
         """
