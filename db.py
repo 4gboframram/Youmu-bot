@@ -24,7 +24,7 @@ class classproperty:
         cls = type(obj)
         return self.__fset.__get__(obj, cls)(value)
 
-    def setter(self, func: typing.Callable):
+    def setter(self, func: typing.Callable) -> "classproperty":
         if not isinstance(func, (classmethod, staticmethod)):
             func = classmethod(func)
         self.__fget = func
@@ -131,7 +131,7 @@ class _ChannelsTable:
         self.__name = name
 
     @property
-    def connection(self):
+    def connection(self) -> aiosqlite.Connection:
         return self.__connection
 
     async def add_channel(self, channel_id: int) -> None:
@@ -196,13 +196,13 @@ class PrefixTable:
     def connection(self):
         return self.__connection
 
-    async def contains_prefix(self, guild_id:int,prefix:str)->bool:
+    async def contains_prefix(self, guild_id: int, prefix: str) -> bool:
         async with self.connection.cursor() as cursor:
             cursor: aiosqlite.Cursor
             await cursor.execute("select count(*) from prefixes where guild_id=? and prefix=?)", (guild_id, prefix))
             count, = await cursor.fetchone()
             return bool(count)
-        
+
     async def add_prefix(self, guild_id: int, prefix: str) -> None:
         async with self.connection.cursor() as cursor:
             cursor: aiosqlite.Cursor
