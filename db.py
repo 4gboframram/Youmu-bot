@@ -228,7 +228,11 @@ class PrefixTable:
     async def add_prefix(self, guild_id: int, prefix: str) -> None:
         async with self.connection.cursor() as cursor:
             cursor: aiosqlite.Cursor
-            await cursor.execute("insert into prefixes(guild_id, prefix) values (?, ?)", (guild_id, prefix))
+            try:
+                await cursor.execute("insert into prefixes(guild_id, prefix) values (?, ?)", (guild_id, prefix))
+                return True
+            except aiosqlite.IntegrityError:
+                return False
 
     async def remove_prefix(self, guild_id: int, prefix: str) -> None:
         async with self.connection.cursor() as cursor:
