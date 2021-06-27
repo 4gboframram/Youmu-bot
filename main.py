@@ -156,24 +156,24 @@ async def on_level_up(message):
 @bot.event
 async def on_guild_channel_create(channel):
 	print('updating muted role channel perms...')
-	guild=channel.guild
+	guild = channel.guild
 	role = discord.utils.get(guild.roles, name="Speaking Cut")
 	if not role:
 			print('creating role...')
-			role=await guild.create_role(name="Speaking Cut")
+			role = await guild.create_role(name="Speaking Cut")
 			permissions = discord.Permissions()
 			permissions.update(send_messages = False)
 
 			await role.edit(reason = None, colour = discord.Colour.black(), permissions=permissions)
 			print('Changing perms')
 			for channel in guild.channels:
-				
 				await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
-	else: await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
+	else:
+		await channel.set_permissions(role, speak=False, send_messages=False, read_message_history=True, read_messages=True)
 	print('success!')
 
-	bot_channel_db.add_channel(str(channel.id))
-	xp_channel_db.add_channel(str(channel.id))
+	await bot_channel_tbl.add_channel(channel.id)
+	await xp_channel_tbl.add_channel(channel.id)
 
 @bot.event
 async def on_guild_join(guild):
