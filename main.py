@@ -455,14 +455,14 @@ async def removeallbotchannels(ctx):
 	await ctx.send(embed=embed)
 
 #########
-#Prefix
+# Prefix
 #########
 @bot.command()
 async def prefixes(ctx):
-	prefix=prefix_db.get_prefixes(ctx.guild.id)
-	prefix_str='\n'.join(prefix)
+	prefix = await prefix_tbl.get_prefixes(ctx.guild.id)
+	prefix_str = '\n'.join(prefix)
 	print(prefix_str)
-	embed=YoumuEmbed(title='Prefixes', description=f'Prefixes: \n**{prefix_str}**', color=0x53cc74)
+	embed = YoumuEmbed(title='Prefixes', description=f'Prefixes: \n**{prefix_str}**', color=0x53cc74)
 	await ctx.send(embed=embed)
 
 @bot.command()
