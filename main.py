@@ -358,7 +358,7 @@ async def _inspire(ctx):
 		await ctx.send('Inspirobot is broken, there is no reason to live.')
 
 ##################
-#Leveling Commands
+# Leveling Commands
 #################
 
 @bot.command()
@@ -372,7 +372,8 @@ async def xp(ctx):
 @bot.command()
 @commands.check(is_botchannel)
 async def rank(ctx):
-	embed=YoumuEmbed(title='Rank?',description=f"{ctx.author.mention}, you are rank {db.get_member_rank(ctx.guild.id, ctx.author.id)} in the server!", color=0x53cc74)
+	rank = await levels_tbl.get_member_rank(ctx.guild.id, ctx.author.id)
+	embed = YoumuEmbed(title='Rank?', description=f"{ctx.author.mention}, you are rank {rank} in the server!", color=0x53cc74)
 	await ctx.send(embed=embed)
 
 
