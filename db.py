@@ -225,7 +225,7 @@ class PrefixTable:
             count, = await cursor.fetchone()
             return bool(count)
 
-    async def add_prefix(self, guild_id: int, prefix: str) -> None:
+    async def add_prefix(self, guild_id: int, prefix: str) -> bool:
         async with self.connection.cursor() as cursor:
             cursor: aiosqlite.Cursor
             try:
@@ -234,10 +234,11 @@ class PrefixTable:
             except aiosqlite.IntegrityError:
                 return False
 
-    async def remove_prefix(self, guild_id: int, prefix: str) -> None:
+    async def remove_prefix(self, guild_id: int, prefix: str) -> bool:
         async with self.connection.cursor() as cursor:
             cursor: aiosqlite.Cursor
             await cursor.execute("delete from prefixes where guild_id=? and prefix=?)", (guild_id, prefix))
+            return bool(cursor.rowcount)
 
     async def get_prefixes(self, guild_id: int) -> list[str]:
         async with self.connection.cursor() as cursor:
