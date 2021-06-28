@@ -668,7 +668,15 @@ async def owner(ctx, guild_id: int, *, message):
 
 async def setup():
 	global levels_tbl, bot_channel_tbl, xp_channel_tbl, prefix_tbl
-	conn = await aiosqlite.connect("databases/youmu.db")
+	if not os.path.isdir("data/"):
+		os.mkdir("data/")
+	if not os.path.exists("data/youmu.db"):
+		print("Database doesnt exists, creating")
+		conn = await aiosqlite.connect("data/youmu.db")
+		schema = open("youmudb_schema.sql").read()
+		await conn.executescript(schema)
+	else:
+		conn = await aiosqlite.connect("data/youmu.db")
 	levels_tbl = db.LevelsTable(conn)
 	bot_channel_tbl = db.BotChannelsTable(conn)
 	xp_channel_tbl = db.ExpChannelsTable(conn)
