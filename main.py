@@ -667,12 +667,12 @@ async def owner(ctx, guild_id: int, *, message):
 	await ctx.author.send(invite.url)
 
 async def setup():
-	global levels_tbl, bot_channel_tbl, xp_channel_tbl, prefixes_tbl
+	global levels_tbl, bot_channel_tbl, xp_channel_tbl, prefix_tbl
 	conn = await aiosqlite.connect("databases/youmu.db")
 	levels_tbl = db.LevelsTable(conn)
 	bot_channel_tbl = db.BotChannelsTable(conn)
 	xp_channel_tbl = db.ExpChannelsTable(conn)
-	prefixes_tbl = db.PrefixTable(conn)
+	prefix_tbl = db.PrefixTable(conn)
 
 if __name__ == "__main__":
 	asyncio.get_event_loop().run_until_complete(setup())
