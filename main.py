@@ -667,12 +667,20 @@ async def owner(ctx, guild_id: int, *, message):
 	await ctx.author.send(invite.url)
 
 async def setup():
-	global levels_tbl, bot_channel_tbl, xp_channel_tbl, prefixes_tbl
-	conn = await aiosqlite.connect("databases/youmu.db")
+	global levels_tbl, bot_channel_tbl, xp_channel_tbl, prefix_tbl
+	if not os.path.isdir("data/"):
+		os.mkdir("data/")
+	if not os.path.exists("data/youmu.db"):
+		print("Database doesnt exists, creating")
+		conn = await aiosqlite.connect("data/youmu.db")
+		schema = open("youmudb_schema.sql").read()
+		await conn.executescript(schema)
+	else:
+		conn = await aiosqlite.connect("data/youmu.db")
 	levels_tbl = db.LevelsTable(conn)
 	bot_channel_tbl = db.BotChannelsTable(conn)
 	xp_channel_tbl = db.ExpChannelsTable(conn)
-	prefixes_tbl = db.PrefixTable(conn)
+	prefix_tbl = db.PrefixTable(conn)
 
 if __name__ == "__main__":
 	asyncio.get_event_loop().run_until_complete(setup())
